@@ -21,6 +21,7 @@ export default function MedicalChatbot() {
     handleAnswer,
     handleUserMessage,
     addMessage,
+    awaitingDossierResponse,
   } = useMedicalChat()
 
   const [userInput, setUserInput] = useState("")
@@ -93,6 +94,18 @@ export default function MedicalChatbot() {
             <CardFooter className="border-t p-4">
               {currentQuestion ? (
                 <QuestionInput question={currentQuestion} onAnswer={handleAnswer} />
+              ) : awaitingDossierResponse ? (
+                <div className="flex w-full space-x-2">
+                  <Input
+                    value={userInput}
+                    onChange={(e) => setUserInput(e.target.value)}
+                    placeholder="Répondez par 'oui' ou 'non'..."
+                    onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                  />
+                  <Button onClick={handleSendMessage}>
+                    <Send className="w-4 h-4" />
+                  </Button>
+                </div>
               ) : !isStarted ? (
                 <div className="flex w-full space-x-2">
                   <Input

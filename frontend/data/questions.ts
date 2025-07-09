@@ -115,7 +115,7 @@ export const MEDICAL_QUESTIONS: Question[] = [
 ]
 
 export const WELCOME_MESSAGE =
-  "Bonjour ! Je suis votre assistant médical virtuel. Je vais vous poser quelques questions pour préparer votre dossier médical avant votre consultation. Êtes-vous prêt à commencer ?"
+  "Est-ce que tu as déjà un dossier médical ?"
 
 export const COMPLETION_MESSAGE =
   "Parfait ! J'ai collecté toutes les informations nécessaires. Votre dossier médical est maintenant prêt. Souhaitez-vous fixer un rendez-vous ?"

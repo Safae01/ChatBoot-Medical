@@ -31,6 +31,9 @@ export function useMedicalChat() {
     setMessages((prev) => [...prev, newMessage])
   }, [])
 
+  // Ajout d'un mode "pré-question" pour le choix dossier médical
+  const [awaitingDossierResponse, setAwaitingDossierResponse] = useState(true)
+
   const startQuestionnaire = useCallback(() => {
     setIsStarted(true)
     setCurrentQuestionIndex(0)
@@ -113,15 +116,29 @@ export function useMedicalChat() {
 
   const handleUserMessage = useCallback(
     (message: string) => {
-      if (!isStarted) {
-        if (message.toLowerCase().includes("oui") || message.toLowerCase().includes("commenc")) {
+      if (awaitingDossierResponse) {
+        if (message.toLowerCase().includes("oui")) {
+          // Aller directement à la prise de rendez-vous
+          setIsStarted(false)
+          setCurrentQuestion(null)
+          setIsCompleted(true)
+          setAwaitingDossierResponse(false)
+          setTimeout(() => {
+            addMessage("Très bien, nous allons directement prendre rendez-vous.", true)
+          }, 500)
+        } else if (message.toLowerCase().includes("non")) {
+          setAwaitingDossierResponse(false)
           startQuestionnaire()
         } else {
-          addMessage("Parfait ! Dites-moi quand vous êtes prêt à commencer.", true)
+          addMessage("Merci de répondre par 'oui' ou 'non'.", true)
         }
+        return
+      }
+      if (!isStarted) {
+        addMessage("Parfait ! Dites-moi quand vous êtes prêt à commencer.", true)
       }
     },
-    [isStarted, startQuestionnaire, addMessage],
+    [isStarted, startQuestionnaire, addMessage, awaitingDossierResponse],
   )
 
   return {
@@ -133,5 +150,6 @@ export function useMedicalChat() {
     handleAnswer,
     handleUserMessage,
     addMessage,
-  }
+    awaitingDossierResponse,
+  }
 }
