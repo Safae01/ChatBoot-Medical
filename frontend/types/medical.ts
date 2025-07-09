@@ -1,10 +1,11 @@
 export interface Question {
   id: string
   text: string
-  type: "text" | "select" | "multiselect" | "date"
+  type: "text" | "select" | "multiselect" | "date" | "file"
   options?: string[]
   required: boolean
   category: string
+  accept?:string
 }
 
 export interface PatientData {
@@ -23,12 +24,21 @@ export interface PatientData {
   antecedensFamiliaux: string[]
   autresInfos: string
 }
+export interface FileData {
+    name: string
+    type: string
+    size: number
+    url: string
+    uploadDate: Date
+  }
+
 
 export interface ChatMessage {
   id: string
   text: string
   isBot: boolean
   timestamp: Date
+  files?: FileData[]
 }
 
 export interface RendezVous {

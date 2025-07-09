@@ -1,8 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { User, Phone, Stethoscope, Pill, AlertTriangle, Users } from "lucide-react"
-import type { PatientData } from "../types/medical"
+import { User, Phone, Stethoscope, Pill, AlertTriangle, Users, FileText } from "lucide-react"
+import type { PatientData, FileData } from "../types/medical"
+import { FileViewer } from "./FileViewer" // ✨ Ajouter cet import
 
 interface PatientSummaryProps {
   patientData: Partial<PatientData>
@@ -98,6 +99,22 @@ export function PatientSummary({ patientData }: PatientSummaryProps) {
         </div>
 
         <Separator />
+
+        {/* 🆕 SECTION DOCUMENTS/FICHIERS */}
+        {patientData.radiosDocuments && (patientData.radiosDocuments as FileData[]).length > 0 && (
+          <>
+            <div>
+              <Badge variant="outline" className="mb-2">
+                <FileText className="w-3 h-3 mr-1" />
+                Documents médicaux
+              </Badge>
+              <div className="text-sm">
+                <FileViewer files={patientData.radiosDocuments as FileData[]} />
+              </div>
+            </div>
+            <Separator />
+          </>
+        )}
 
         {/* Médicaments */}
         {patientData.medicamentsActuels && (

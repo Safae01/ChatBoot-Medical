@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react"
 import type { ChatMessage, PatientData, Question } from "../types/medical"
 import { MEDICAL_QUESTIONS, WELCOME_MESSAGE, COMPLETION_MESSAGE } from "../data/questions"
+import { validateInput } from "../utils/validation"
 
 export function useMedicalChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -45,7 +46,11 @@ export function useMedicalChat() {
       // Ajouter la réponse de l'utilisateur
       const answerText = Array.isArray(answer) ? answer.join(", ") : answer
       addMessage(answerText, false)
-
+      const validation = validateInput(currentQuestion.id, answer)
+      if (!validation.isValid) {
+        addMessage(`❌ ${validation.error}`, true)
+        return // ❌ Bloque si invalide
+      }
       // Sauvegarder la réponse
       setPatientData((prev) => ({
         ...prev,

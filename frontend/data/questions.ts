@@ -16,6 +16,14 @@ export const MEDICAL_QUESTIONS: Question[] = [
     category: "identite",
   },
   {
+    id: "fichier externe",
+    text: "Avez-vous des radios, analyses ou documents médicaux à partager ?",
+    type: "file",
+    required: false,
+    category: "documents",
+    accept: ".jpg,.jpeg,.png,.pdf,.doc,.docx",
+  },
+  {
     id: "age",
     text: "Quel âge avez-vous ?",
     type: "text",
@@ -59,14 +67,7 @@ export const MEDICAL_QUESTIONS: Question[] = [
     required: true,
     category: "symptomes",
   },
-  {
-    id: "intensiteDouleur",
-    text: "Sur une échelle de 1 à 10, quelle est l'intensité de votre douleur ? (1 = très faible, 10 = insupportable)",
-    type: "select",
-    options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Pas de douleur"],
-    required: true,
-    category: "symptomes",
-  },
+
   {
     id: "antecedentsMedicaux",
     text: "Avez-vous des antécédents médicaux ? (Sélectionnez tous ceux qui s'appliquent)",
@@ -92,24 +93,7 @@ export const MEDICAL_QUESTIONS: Question[] = [
     required: false,
     category: "medicaments",
   },
-  {
-    id: "allergies",
-    text: "Avez-vous des allergies ? (Sélectionnez toutes celles qui s'appliquent)",
-    type: "multiselect",
-    options: [
-      "Pénicilline",
-      "Aspirine",
-      "Fruits à coque",
-      "Fruits de mer",
-      "Latex",
-      "Pollen",
-      "Animaux",
-      "Aucune allergie connue",
-      "Autre",
-    ],
-    required: true,
-    category: "allergies",
-  },
+
   {
     id: "antecedensFamiliaux",
     text: "Y a-t-il des maladies importantes dans votre famille ? (Sélectionnez toutes celles qui s'appliquent)",
@@ -127,13 +111,7 @@ export const MEDICAL_QUESTIONS: Question[] = [
     required: false,
     category: "famille",
   },
-  {
-    id: "autresInfos",
-    text: "Y a-t-il d'autres informations importantes que vous souhaitez partager ?",
-    type: "text",
-    required: false,
-    category: "autres",
-  },
+
 ]
 
 export const WELCOME_MESSAGE =
