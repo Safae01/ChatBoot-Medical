@@ -1,56 +1,54 @@
-    "use client"
+"use client"
 
     import { useState } from "react"
     import { Button } from "@/components/ui/button"
-    import { Input } from "@/components/ui/input"
-    import { Checkbox } from "@/components/ui/checkbox"
-    import type { Question } from "../types/medical"
-    import { validateInput } from "../utils/validation"
 
-    interface QuestionInputProps {
-    question: Question
-    onAnswer: (answer: string | string[] | File) => void
+import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
+import type { Question, FileData } from "../types/medical"
+import { validateInput } from "../utils/validation"
+import { FileUpload } from "./FileUpload"
+
+
+interface QuestionInputProps {
+  question: Question
+  onAnswer: (answer: string | string[] | FileData[]) => void
+}
+
+
+export function QuestionInput({ question, onAnswer }: QuestionInputProps) {
+  const [textAnswer, setTextAnswer] = useState("")
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([])
+  const [selectedOption, setSelectedOption] = useState("")
+  const [error, setError] = useState("")
+
+  const handleSubmit = () => {
+    let answer: string | string[] | FileData[] | null = null
+
+    if (question.type === "text") {
+      if (textAnswer.trim()) {
+        answer = textAnswer.trim()
+        setTextAnswer("")
+      }
+    } else if (question.type === "select") {
+      if (selectedOption) {
+        answer = selectedOption
+        setSelectedOption("")
+      }
+    } else if (question.type === "multiselect") {
+      if (selectedOptions.length > 0) {
+        answer = selectedOptions
+        setSelectedOptions([])
+      }
     }
 
-    export function QuestionInput({ question, onAnswer }: QuestionInputProps) {
-    const [textAnswer, setTextAnswer] = useState("")
-    const [selectedOptions, setSelectedOptions] = useState<string[]>([])
-    const [selectedOption, setSelectedOption] = useState("")
-    const [fileAnswer, setFileAnswer] = useState<File | null>(null)
-    const [error, setError] = useState("")
-
-    const handleSubmit = () => {
-        let answer: string | string[] | File | null = null
-
-        if (question.type === "text") {
-        if (textAnswer.trim()) {
-            answer = textAnswer.trim()
-            setTextAnswer("")
-        }
-        } else if (question.type === "select") {
-        if (selectedOption) {
-            answer = selectedOption
-            setSelectedOption("")
-        }
-        } else if (question.type === "multiselect") {
-        if (selectedOptions.length > 0) {
-            answer = selectedOptions
-            setSelectedOptions([])
-        }
-        } else if (question.type === "file") {
-        if (fileAnswer) {
-            answer = fileAnswer
-            setFileAnswer(null)
-        }
-        }
-
-        if (answer !== null) {
-        setError("")
-        onAnswer(answer)
-        } else {
-        setError("Veuillez fournir une réponse valide.")
-        }
+    if (answer !== null) {
+      setError("")
+      onAnswer(answer)
+    } else {
+      setError("Veuillez fournir une réponse valide.")
     }
+  }
 
     const handleMultiSelectChange = (option: string, checked: boolean) => {
         setSelectedOptions((prev) =>
@@ -120,26 +118,23 @@
             </div>
         )}
 
-        {question.type === "file" && (
-            <div className="space-y-2">
-            <Input
-                type="file"
-                onChange={(e) => {
-                const file = e.target.files?.[0]
-                if (file) setFileAnswer(file)
-                }}
-            />
-            <Button
-                onClick={handleSubmit}
-                disabled={!fileAnswer}
-                className="w-full"
-            >
-                Envoyer le fichier
-            </Button>
-            </div>
-        )}
+      {question.type === "file" && (
+        <div className="space-y-2">
+          <FileUpload
+            onFilesSelected={(files) => {
+              if (files && files.length > 0) {
+                setError("")
+                onAnswer(files)
+              } else {
+                setError("Veuillez sélectionner au moins un fichier.")
+              }
+            }}
+            accept={question.accept || undefined}
+          />
+        </div>
+      )}
 
         {error && <p className="text-red-500 text-sm">{error}</p>}
         </div>
-    )
-    }
+    )
+    }

@@ -15,14 +15,7 @@ export const MEDICAL_QUESTIONS: Question[] = [
     required: true,
     category: "identite",
   },
-  {
-    id: "fichier externe",
-    text: "Avez-vous des radios, analyses ou documents médicaux à partager ?",
-    type: "file",
-    required: false,
-    category: "documents",
-    accept: ".jpg,.jpeg,.png,.pdf,.doc,.docx",
-  },
+
   {
     id: "age",
     text: "Quel âge avez-vous ?",
@@ -111,7 +104,14 @@ export const MEDICAL_QUESTIONS: Question[] = [
     required: false,
     category: "famille",
   },
-
+  {
+    id: "fichier externe",
+    text: "Avez-vous des radios, analyses ou documents médicaux à partager ?",
+    type: "file",
+    required: false,
+    category: "documents",
+    accept: ".jpg,.jpeg,.png,.pdf,.doc,.docx",
+  },
 ]
 
 export const WELCOME_MESSAGE =

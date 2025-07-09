@@ -101,7 +101,7 @@ export function PatientSummary({ patientData }: PatientSummaryProps) {
         <Separator />
 
         {/* 🆕 SECTION DOCUMENTS/FICHIERS */}
-        {patientData.radiosDocuments && (patientData.radiosDocuments as FileData[]).length > 0 && (
+        {((patientData as any)["fichier externe"] && Array.isArray((patientData as any)["fichier externe"]) && ((patientData as any)["fichier externe"] as FileData[]).length > 0) && (
           <>
             <div>
               <Badge variant="outline" className="mb-2">
@@ -109,7 +109,7 @@ export function PatientSummary({ patientData }: PatientSummaryProps) {
                 Documents médicaux
               </Badge>
               <div className="text-sm">
-                <FileViewer files={patientData.radiosDocuments as FileData[]} />
+                <FileViewer files={(patientData as any)["fichier externe"] as FileData[]} />
               </div>
             </div>
             <Separator />
@@ -161,6 +161,6 @@ export function PatientSummary({ patientData }: PatientSummaryProps) {
           </div>
         )}
       </CardContent>
-    </Card>
-  )
+    </Card>
+  )
 }

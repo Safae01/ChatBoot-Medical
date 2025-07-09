@@ -40,22 +40,52 @@ export function useMedicalChat() {
   }, [addMessage])
 
   const handleAnswer = useCallback(
-    (answer: string | string[]) => {
+    (answer: string | string[] | import("../types/medical").FileData[]) => {
       if (!currentQuestion) return
 
-      // Ajouter la réponse de l'utilisateur
-      const answerText = Array.isArray(answer) ? answer.join(", ") : answer
+      // Affichage du message utilisateur
+      let answerText = ""
+      if (Array.isArray(answer) && answer.length > 0 && typeof answer[0] === "object" && 'name' in answer[0]) {
+        // C'est un tableau de fichiers
+        answerText =` 📎 ${answer.length} fichier(s) envoyé(s)`
+      } else {
+        answerText = Array.isArray(answer) ? answer.join(", ") : answer as string
+      }
       addMessage(answerText, false)
-      const validation = validateInput(currentQuestion.id, answer)
-      if (!validation.isValid) {
-        addMessage(`❌ ${validation.error}`, true)
+
+      // Validation uniquement pour les réponses texte ou choix
+      let isValid = true
+      let errorMsg = ""
+      if (!(Array.isArray(answer) && answer.length > 0 && typeof answer[0] === "object" && 'name' in answer[0])) {
+        const validation = validateInput(currentQuestion.id, answer as string | string[])
+        isValid = validation.isValid
+        errorMsg = validation.error || ""
+      }
+      if (!isValid) {
+        addMessage(`❌ ${errorMsg}`, true)
         return // ❌ Bloque si invalide
       }
-      // Sauvegarder la réponse
-      setPatientData((prev) => ({
-        ...prev,
-        [currentQuestion.id]: answer,
-      }))
+      // Sauvegarder la réponse (texte, tableau ou fichiers)
+      setPatientData((prev) => {
+        // Si c'est un upload de fichiers, on cumule les fichiers précédents
+        if (Array.isArray(answer) && answer.length > 0 && typeof answer[0] === "object" && 'name' in answer[0]) {
+          // @ts-ignore accès dynamique
+          const prevFiles = Array.isArray((prev as any)[currentQuestion.id]) ? ((prev as any)[currentQuestion.id] as any[]) : []
+          // On évite les doublons par nom de fichier
+          const allFiles = [...prevFiles, ...answer].filter((file, idx, arr) =>
+            arr.findIndex(f => f.name === file.name && f.size === file.size) === idx
+          )
+          return {
+            ...prev,
+            [currentQuestion.id]: allFiles,
+          }
+        }
+        // Sinon, comportement normal
+        return {
+          ...prev,
+          [currentQuestion.id]: answer,
+        }
+      })
 
       // Passer à la question suivante
       const nextIndex = currentQuestionIndex + 1
@@ -103,5 +133,5 @@ export function useMedicalChat() {
     handleAnswer,
     handleUserMessage,
     addMessage,
-  }
+  }
 }
