@@ -75,7 +75,7 @@ export default function MedicalChatbot() {
         <Dialog open={showHistory} onOpenChange={setShowHistory}>
           <DialogTrigger asChild>
             <Button className="rounded-full shadow-lg bg-blue-600 hover:bg-blue-700 text-white w-16 h-16 flex items-center justify-center" size="icon" aria-label="Ouvrir le chatbot">
-              <FontAwesomeIcon icon={faRobot} className="w-10 h-10" />
+              <FontAwesomeIcon icon={faRobot} className="w-10 h-10"  style={{ width: '2rem', height: '2rem' }}  />
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl p-0 overflow-hidden">
