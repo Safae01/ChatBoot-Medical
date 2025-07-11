@@ -14,7 +14,7 @@ import { PatientSummary } from "../components/PatientSummary"
 import { AppointmentBooking } from "../components/AppointmentBooking"
 import type { RendezVous } from "../types/medical"
 
-export default function MedicalChatbot() {  
+export default function MedicalChatbot() {
   const {
     messages,
     currentQuestion,
@@ -152,30 +152,6 @@ export default function MedicalChatbot() {
             <div id="appointment-booking">
               <AppointmentBooking onBookAppointment={handleBookAppointment} />
             </div>
-          )}
-
-          {appointment && (
-            <Card className="bg-green-50 border-green-200">
-              <CardHeader>
-                <CardTitle className="text-green-800 flex items-center gap-2">
-                  <User className="w-5 h-5" />
-                  Rendez-vous confirmé
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 text-sm">
-                  <p>
-                    <strong>Date:</strong> {new Date(appointment.date).toLocaleDateString("fr-FR")}
-                  </p>
-                  <p>
-                    <strong>Heure:</strong> {appointment.heure}
-                  </p>
-                  <p>
-                    <strong>Motif:</strong> {appointment.motif}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
           )}
         </div>
       </div>
