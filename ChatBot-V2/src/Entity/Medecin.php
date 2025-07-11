@@ -1,0 +1,223 @@
+<?php
+
+namespace App\Entity;
+
+use App\Repository\MedecinRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Metadata\ApiResource;
+
+#[ApiResource]
+#[ORM\Entity(repositoryClass: MedecinRepository::class)]
+class Medecin
+{
+
+
+    #[ORM\OneToOne(inversedBy: 'medecin', cascade: ['persist', 'remove'])]
+private ?User $user = null;
+
+public function getUser(): ?User { return $this->user; }
+public function setUser(?User $user): static {
+    $this->user = $user;
+    return $this;
+}
+
+
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $nom = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $prenom = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $email = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $telephone = null;
+
+    #[ORM\ManyToOne(inversedBy: 'medecins')]
+    private ?Specialite $specialite = null;
+
+    /**
+     * @var Collection<int, DossierMedical>
+     */
+    #[ORM\ManyToMany(targetEntity: DossierMedical::class, mappedBy: 'medecins')]
+    private Collection $dossierMedicals;
+
+    /**
+     * @var Collection<int, RendezVous>
+     */
+    #[ORM\OneToMany(targetEntity: RendezVous::class, mappedBy: 'medecin')]
+    private Collection $rendezVous;
+
+    /**
+     * @var Collection<int, ChatbotQuestion>
+     */
+    #[ORM\OneToMany(targetEntity: ChatbotQuestion::class, mappedBy: 'medecin')]
+    private Collection $questions;
+
+    public function __construct()
+    {
+        $this->dossierMedicals = new ArrayCollection();
+        $this->rendezVous = new ArrayCollection();
+        $this->questions = new ArrayCollection();
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getNom(): ?string
+    {
+        return $this->nom;
+    }
+
+    public function setNom(string $nom): static
+    {
+        $this->nom = $nom;
+
+        return $this;
+    }
+
+    public function getPrenom(): ?string
+    {
+        return $this->prenom;
+    }
+
+    public function setPrenom(string $prenom): static
+    {
+        $this->prenom = $prenom;
+
+        return $this;
+    }
+
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(string $email): static
+    {
+        $this->email = $email;
+
+        return $this;
+    }
+
+    public function getTelephone(): ?string
+    {
+        return $this->telephone;
+    }
+
+    public function setTelephone(string $telephone): static
+    {
+        $this->telephone = $telephone;
+
+        return $this;
+    }
+
+    public function getSpecialite(): ?Specialite
+    {
+        return $this->specialite;
+    }
+
+    public function setSpecialite(?Specialite $specialite): static
+    {
+        $this->specialite = $specialite;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, DossierMedical>
+     */
+    public function getDossierMedicals(): Collection
+    {
+        return $this->dossierMedicals;
+    }
+
+    public function addDossierMedical(DossierMedical $dossierMedical): static
+    {
+        if (!$this->dossierMedicals->contains($dossierMedical)) {
+            $this->dossierMedicals->add($dossierMedical);
+            $dossierMedical->addMedecin($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDossierMedical(DossierMedical $dossierMedical): static
+    {
+        if ($this->dossierMedicals->removeElement($dossierMedical)) {
+            $dossierMedical->removeMedecin($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, RendezVous>
+     */
+    public function getRendezVous(): Collection
+    {
+        return $this->rendezVous;
+    }
+
+    public function addRendezVou(RendezVous $rendezVou): static
+    {
+        if (!$this->rendezVous->contains($rendezVou)) {
+            $this->rendezVous->add($rendezVou);
+            $rendezVou->setMedecin($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRendezVou(RendezVous $rendezVou): static
+    {
+        if ($this->rendezVous->removeElement($rendezVou)) {
+            // set the owning side to null (unless already changed)
+            if ($rendezVou->getMedecin() === $this) {
+                $rendezVou->setMedecin(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ChatbotQuestion>
+     */
+    public function getQuestions(): Collection
+    {
+        return $this->questions;
+    }
+
+    public function addQuestion(ChatbotQuestion $question): static
+    {
+        if (!$this->questions->contains($question)) {
+            $this->questions->add($question);
+            $question->setMedecin($this);
+        }
+
+        return $this;
+    }
+
+    public function removeQuestion(ChatbotQuestion $question): static
+    {
+        if ($this->questions->removeElement($question)) {
+            // set the owning side to null (unless already changed)
+            if ($question->getMedecin() === $this) {
+                $question->setMedecin(null);
+            }
+        }
+
+        return $this;
+    }
+}
