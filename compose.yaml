@@ -1,5 +1,7 @@
+version: '3.8'
+
 services:
-###> doctrine/doctrine-bundle ###
+  ###> doctrine/doctrine-bundle ###
   nginx:
     image: nginx:latest
     ports:
@@ -14,7 +16,9 @@ services:
       - symfony
 
   symfony:
-    image: php:8.2-fpm
+    build:
+      context: .
+      dockerfile: Dockerfile
     volumes:
       - ./:/var/www/html:cached
       - ./infra/php/php-fpm.d/www.conf:/usr/local/etc/php-fpm.d/www.conf
@@ -36,8 +40,6 @@ services:
     networks:
       - symfony
 
-   
-
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:latest
     environment:
@@ -48,12 +50,12 @@ services:
       - database
     networks:
       - symfony
-###< doctrine/doctrine-bundle ###
+  ###< doctrine/doctrine-bundle ###
 
 volumes:
-###> doctrine/doctrine-bundle ###
+  ###> doctrine/doctrine-bundle ###
   database_data:
-###< doctrine/doctrine-bundle ###
+  ###< doctrine/doctrine-bundle ###
 
 networks:
   symfony:
