@@ -74,18 +74,29 @@ export default function MedicalChatbot() {
       <div className="fixed bottom-6 right-6 z-50">
         <Dialog open={showHistory} onOpenChange={setShowHistory}>
           <DialogTrigger asChild>
-            <Button
-            
-              size="icon"
+            <button
               aria-label="Ouvrir le chatbot"
+              className="p-0 m-0 border-none bg-transparent shadow-none focus:outline-none focus:ring-0 animate-bounce"
+              style={{ boxShadow: 'none', background: 'transparent' }}
             >
               <img
                 src="/robot.png"
                 alt="Chatbot Robot"
-                className="w-10 h-10 object-contain"
+                className="w-20 h-20 object-contain"
+                draggable="false"
               />
-            </Button>
+            </button>
           </DialogTrigger>
+      {/* Animation bounce si non présente dans Tailwind ou le projet */}
+      <style jsx global>{`
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-18px); }
+        }
+        .animate-bounce {
+          animation: bounce 1.2s infinite;
+        }
+      `}</style>
           <DialogContent className="max-w-2xl p-0 overflow-hidden">
             <div className="flex flex-col h-[80vh] w-full">
               {/* Header du chatbot */}
