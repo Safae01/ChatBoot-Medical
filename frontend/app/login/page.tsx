@@ -12,19 +12,41 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log("handleSubmit triggered")
+    console.log("Email:", email, "Password:", password)
 
     try {
-      const response = await axios.post("http://localhost:8000/api/login", {
+      const response = await axios.post("http://localhost:8088/api/login", {
         username: email,
         password: password,
       })
 
+      console.log("Réponse complète :", response.data)
+
       const token = response.data.token
+      console.log("Token extrait :", token)
+
+      if (!token) {
+        setError("Le serveur n'a pas renvoyé de token.")
+        return
+      }
+
       localStorage.setItem("token", token)
       setError("")
-      router.push("/dashboard") // redirige après connexion
-    } catch (err) {
-      setError("Email ou mot de passe incorrect.")
+      await router.push("/dashboard")
+    } catch (err: any) {
+      console.error("Erreur login :", err)
+
+      if (err.response) {
+        console.error("Détails erreur réponse:", err.response.data)
+        setError("Erreur serveur : " + (err.response.data.message || "Login échoué"))
+      } else if (err.request) {
+        console.error("Aucune réponse reçue :", err.request)
+        setError("Le serveur ne répond pas.")
+      } else {
+        console.error("Erreur inconnue :", err.message)
+        setError("Une erreur est survenue.")
+      }
     }
   }
 
@@ -37,6 +59,7 @@ export default function LoginPage() {
           type="email"
           placeholder="Adresse email"
           value={email}
+          autoComplete="email"
           onChange={(e) => setEmail(e.target.value)}
           required
           className="w-full mb-3 px-4 py-2 border rounded"
@@ -48,6 +71,7 @@ export default function LoginPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
+          autoComplete="current-password"
           className="w-full mb-3 px-4 py-2 border rounded"
         />
 
