@@ -1,58 +1,63 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import axios from "axios"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import axios from "axios";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
-  const router = useRouter()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("handleSubmit triggered")
-    console.log("Email:", email, "Password:", password)
+    e.preventDefault();
+    console.log("handleSubmit triggered");
+    console.log("Email:", email, "Password:", password);
 
     try {
       const response = await axios.post("http://localhost:8088/api/login", {
-        username: email,
-        password: password,
-      })
+        email,
+        password,
+      });
 
-      console.log("Réponse complète :", response.data)
+      console.log("Réponse complète :", response.data);
 
-      const token = response.data.token
-      console.log("Token extrait :", token)
+      const token = response.data.token;
+      console.log("Token extrait :", token);
 
       if (!token) {
-        setError("Le serveur n'a pas renvoyé de token.")
-        return
+        setError("Le serveur n'a pas renvoyé de token.");
+        return;
       }
 
-      localStorage.setItem("token", token)
-      setError("")
-      await router.push("/dashboard")
+      localStorage.setItem("token", token);
+      setError("");
+      router.push("/dashboard");
     } catch (err: any) {
-      console.error("Erreur login :", err)
+      console.error("Erreur login :", err);
 
       if (err.response) {
-        console.error("Détails erreur réponse:", err.response.data)
-        setError("Erreur serveur : " + (err.response.data.message || "Login échoué"))
+        console.error("Détails erreur réponse:", err.response.data);
+        setError(
+          "Erreur serveur : " + (err.response.data.message || "Login échoué")
+        );
       } else if (err.request) {
-        console.error("Aucune réponse reçue :", err.request)
-        setError("Le serveur ne répond pas.")
+        console.error("Aucune réponse reçue :", err.request);
+        setError("Le serveur ne répond pas.");
       } else {
-        console.error("Erreur inconnue :", err.message)
-        setError("Une erreur est survenue.")
+        console.error("Erreur inconnue :", err.message);
+        setError("Une erreur est survenue.");
       }
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow-md w-full max-w-sm">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white p-6 rounded shadow-md w-full max-w-sm"
+      >
         <h2 className="text-xl font-semibold mb-4">Connexion</h2>
 
         <input
@@ -85,5 +90,5 @@ export default function LoginPage() {
         </button>
       </form>
     </div>
-  )
+  );
 }

@@ -32,7 +32,7 @@ class DossierMedical
 
     #[ORM\OneToOne(inversedBy: 'dossierMedical', cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: false)]
-    private ?patient $patient = null;
+    private ?Patient $patient = null;
 
     /**
      * @var Collection<int, Medecin>
@@ -105,12 +105,12 @@ class DossierMedical
         return $this;
     }
 
-    public function getPatient(): ?patient
+    public function getPatient(): ?Patient
     {
         return $this->patient;
     }
 
-    public function setPatient(patient $patient): static
+    public function setPatient(Patient $patient): static
     {
         $this->patient = $patient;
 
