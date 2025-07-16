@@ -11,7 +11,7 @@ export interface Question {
 export interface PatientData {
   nom: string
   prenom: string
-  date: Date
+  age: string
   sexe: string
   telephone: string
   email: string
@@ -38,7 +38,7 @@ export interface ChatMessage {
   text: string
   isBot: boolean
   timestamp: Date
-  files?: FileData[] 
+  files?: FileData[]
 }
 
 export interface RendezVous {
@@ -46,4 +46,6 @@ export interface RendezVous {
   heure: string
   motif: string
   confirme: boolean
+  specialiteId?: number
+  medecinId?: number
 }

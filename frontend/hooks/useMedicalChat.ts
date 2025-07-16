@@ -5,7 +5,7 @@ import type { ChatMessage, PatientData, Question } from "../types/medical"
 import { MEDICAL_QUESTIONS, WELCOME_MESSAGE, COMPLETION_MESSAGE } from "../data/questions"
 import { validateInput } from "../utils/validation"
 
-export function useMedicalChat() {
+export function useMedicalChat(onQuestionnaireComplete?: () => void) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "1",
@@ -33,6 +33,10 @@ export function useMedicalChat() {
 
   // Ajout d'un mode "pré-question" pour le choix dossier médical
   const [awaitingDossierResponse, setAwaitingDossierResponse] = useState(true)
+  // États pour la collecte d'identité des patients existants
+  const [awaitingPatientName, setAwaitingPatientName] = useState(false)
+  const [awaitingPatientFirstName, setAwaitingPatientFirstName] = useState(false)
+  const [existingPatientData, setExistingPatientData] = useState<{nom?: string, prenom?: string}>({})
 
   const startQuestionnaire = useCallback(() => {
     setIsStarted(true)
@@ -108,6 +112,10 @@ export function useMedicalChat() {
         setCurrentQuestion(null)
         setTimeout(() => {
           addMessage(COMPLETION_MESSAGE, true)
+          // Déclencher l'affichage du formulaire de rendez-vous après le message
+          setTimeout(() => {
+            onQuestionnaireComplete?.()
+          }, 500)
         }, 1000)
       }
     },
@@ -118,13 +126,11 @@ export function useMedicalChat() {
     (message: string) => {
       if (awaitingDossierResponse) {
         if (message.toLowerCase().includes("oui")) {
-          // Aller directement à la prise de rendez-vous
-          setIsStarted(false)
-          setCurrentQuestion(null)
-          setIsCompleted(true)
+          // Demander le nom du patient existant
           setAwaitingDossierResponse(false)
+          setAwaitingPatientName(true)
           setTimeout(() => {
-            addMessage("Très bien, nous allons directement prendre rendez-vous.", true)
+            addMessage("Parfait ! Pour retrouver votre dossier, quel est votre nom de famille ?", true)
           }, 500)
         } else if (message.toLowerCase().includes("non")) {
           setAwaitingDossierResponse(false)
@@ -134,11 +140,36 @@ export function useMedicalChat() {
         }
         return
       }
+
+      if (awaitingPatientName) {
+        // Sauvegarder le nom et demander le prénom
+        setExistingPatientData(prev => ({ ...prev, nom: message.trim() }))
+        setAwaitingPatientName(false)
+        setAwaitingPatientFirstName(true)
+        setTimeout(() => {
+          addMessage("Et votre prénom ?", true)
+        }, 500)
+        return
+      }
+
+      if (awaitingPatientFirstName) {
+        // Sauvegarder le prénom et aller aux rendez-vous
+        setExistingPatientData(prev => ({ ...prev, prenom: message.trim() }))
+        setAwaitingPatientFirstName(false)
+        setIsStarted(false)
+        setCurrentQuestion(null)
+        setIsCompleted(true)
+        setTimeout(() => {
+          addMessage(`Merci ${existingPatientData.nom} ${message.trim()} ! Je vais maintenant vous afficher vos rendez-vous disponibles.`, true)
+        }, 500)
+        return
+      }
+
       if (!isStarted) {
         addMessage("Parfait ! Dites-moi quand vous êtes prêt à commencer.", true)
       }
     },
-    [isStarted, startQuestionnaire, addMessage, awaitingDossierResponse],
+    [isStarted, startQuestionnaire, addMessage, awaitingDossierResponse, awaitingPatientName, awaitingPatientFirstName, existingPatientData],
   )
 
   return {
@@ -151,5 +182,8 @@ export function useMedicalChat() {
     handleUserMessage,
     addMessage,
     awaitingDossierResponse,
+    awaitingPatientName,
+    awaitingPatientFirstName,
+    existingPatientData,
   }
 }

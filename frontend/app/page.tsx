@@ -13,6 +13,15 @@ import { AppointmentBooking } from "../components/AppointmentBooking"
 import type { RendezVous } from "../types/medical"
 
 export default function MedicalChatbot() {
+  const [userInput, setUserInput] = useState("")
+  const [appointment, setAppointment] = useState<RendezVous | null>(null)
+  const [showHistory, setShowHistory] = useState(false)
+  const [showAppointmentForm, setShowAppointmentForm] = useState(false)
+
+  const handleQuestionnaireComplete = () => {
+    setShowAppointmentForm(true)
+  }
+
   const {
     messages,
     currentQuestion,
@@ -23,31 +32,24 @@ export default function MedicalChatbot() {
     handleUserMessage,
     addMessage,
     awaitingDossierResponse,
-  } = useMedicalChat()
+    awaitingPatientName,
+    awaitingPatientFirstName,
+    existingPatientData,
+  } = useMedicalChat(handleQuestionnaireComplete)
 
-  const [userInput, setUserInput] = useState("")
-  const [appointment, setAppointment] = useState<RendezVous | null>(null)
-  const [showHistory, setShowHistory] = useState(false)
-  const [showBookButton, setShowBookButton] = useState(false)
-  const [showAppointmentForm, setShowAppointmentForm] = useState(false)
 
-  const handleGuideToAppointment = () => {
-    setShowHistory(false)
-    const scrollToBooking = document.getElementById("appointment-booking")
-    if (scrollToBooking) {
-      scrollToBooking.scrollIntoView({ behavior: "smooth" })
-    }
-  }
 
   const handleSendMessage = () => {
     if (userInput.trim()) {
       addMessage(userInput, false)
       handleUserMessage(userInput)
 
-      const lowerInput = userInput.trim().toLowerCase()
-      if (lowerInput === "oui") {
-        setShowBookButton(true)
-        setShowAppointmentForm(true)
+      // Afficher le formulaire de rendez-vous dans le chatbot pour patient existant
+      if (awaitingPatientFirstName) {
+        // Après avoir saisi le prénom pour patient existant
+        setTimeout(() => {
+          setShowAppointmentForm(true)
+        }, 1000)
       }
 
       setUserInput("")
@@ -56,10 +58,22 @@ export default function MedicalChatbot() {
 
   const handleBookAppointment = (newAppointment: RendezVous) => {
     setAppointment(newAppointment)
-    addMessage(
-      `Parfait ! Votre rendez-vous est confirmé pour le ${new Date(newAppointment.date).toLocaleDateString("fr-FR")} à ${newAppointment.heure}.`,
-      true,
-    )
+
+    // Import des données médicales pour afficher les détails
+    import("../data/medical-data").then(({ getSpecialiteById, getMedecinById }) => {
+      const specialite = newAppointment.specialiteId ? getSpecialiteById(newAppointment.specialiteId) : null
+      const medecin = newAppointment.medecinId ? getMedecinById(newAppointment.medecinId) : null
+
+      let confirmationMessage = `Parfait ! Votre rendez-vous est confirmé pour le ${new Date(newAppointment.date).toLocaleDateString("fr-FR")} à ${newAppointment.heure}`
+
+      if (specialite && medecin) {
+        confirmationMessage += ` en ${specialite.nom} avec Dr. ${medecin.prenom} ${medecin.nom}.`
+      } else {
+        confirmationMessage += `.`
+      }
+
+      addMessage(confirmationMessage, true)
+    })
   }
 
   const getProgressPercentage = () => {
@@ -146,6 +160,30 @@ export default function MedicalChatbot() {
                       <Send className="w-4 h-4" />
                     </Button>
                   </div>
+                ) : awaitingPatientName ? (
+                  <div className="flex w-full space-x-2">
+                    <Input
+                      value={userInput}
+                      onChange={(e) => setUserInput(e.target.value)}
+                      placeholder="Entrez votre nom de famille..."
+                      onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                    />
+                    <Button onClick={handleSendMessage}>
+                      <Send className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ) : awaitingPatientFirstName ? (
+                  <div className="flex w-full space-x-2">
+                    <Input
+                      value={userInput}
+                      onChange={(e) => setUserInput(e.target.value)}
+                      placeholder="Entrez votre prénom..."
+                      onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                    />
+                    <Button onClick={handleSendMessage}>
+                      <Send className="w-4 h-4" />
+                    </Button>
+                  </div>
                 ) : !isStarted ? (
                   <div className="flex w-full space-x-2">
                     <Input
@@ -157,20 +195,10 @@ export default function MedicalChatbot() {
                     <Button onClick={handleSendMessage}>
                       <Send className="w-4 h-4" />
                     </Button>
-                    {showBookButton && !appointment && !showAppointmentForm && (
-                      <Button className="ml-2" onClick={handleGuideToAppointment}>
-                        Prendre rendez-vous
-                      </Button>
-                    )}
                   </div>
                 ) : (
                   <div className="w-full flex flex-col items-center gap-2">
-                    <p className="text-gray-500">Questionnaire terminé ! Consultez votre dossier médical ci-contre.</p>
-                    {(isCompleted || showBookButton) && !appointment && !showAppointmentForm && (
-                      <Button className="mt-2" onClick={handleGuideToAppointment}>
-                        Prendre rendez-vous
-                      </Button>
-                    )}
+                    <p className="text-gray-500">Questionnaire terminé ! Ne quittez pas avant de prendre votre rendez-vous</p>
                   </div>
                 )}
               </div>
@@ -179,18 +207,10 @@ export default function MedicalChatbot() {
         </Dialog>
       </div>
 
-      {/* Section avec résumé et prise de RDV */}
+      {/* Section avec résumé */}
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
         <div>
           <PatientSummary patientData={patientData} />
-        </div>
-
-        <div className="space-y-6">
-          {isCompleted && !appointment && !showAppointmentForm && (
-            <div id="appointment-booking">
-              <AppointmentBooking onBookAppointment={handleBookAppointment} />
-            </div>
-          )}
         </div>
       </div>
     </div>
