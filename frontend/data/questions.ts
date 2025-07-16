@@ -17,9 +17,9 @@ export const MEDICAL_QUESTIONS: Question[] = [
   },
 
   {
-    id: "age",
-    text: "Quel âge avez-vous ?",
-    type: "text",
+    id: "date_naissance",
+    text: "Quel est votre date de naissance ?",
+    type: "date",
     required: true,
     category: "identite",
   },
@@ -39,10 +39,17 @@ export const MEDICAL_QUESTIONS: Question[] = [
     category: "contact",
   },
   {
-    id: "email",
-    text: "Quelle est votre adresse email ?",
+    id: "cin",
+    text: "votre numéro de Cin s'il vous plait ",
     type: "text",
-    required: false,
+    required: true,
+    category: "identite",
+  },
+  {
+    id: "adresse",
+    text: "votre adresse s'il vous plait",
+    type: "text",
+    required: true,
     category: "contact",
   },
   {
