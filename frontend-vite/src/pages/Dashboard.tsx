@@ -1,13 +1,12 @@
-"use client"
-
-import { useState } from "react"
-import { Sidebar } from "../../components/dashboard/Sidebar"
-import { DashboardHeader } from "../../components/dashboard/DashboardHeader"
-import { StatsCards } from "../../components/dashboard/StatsCards"
-import { RendezVousTab } from "../../components/dashboard/RendezVousTab"
-import { QuestionsTab } from "../../components/dashboard/QuestionsTab"
-import { PatientsTab } from "../../components/dashboard/PatientsTab"
-import { DossierModal } from "../../components/dashboard/DossierModal"
+import React, { useState } from "react"
+import { Sidebar } from "../components/dashboard/Sidebar"
+import { DashboardHeader } from "../components/dashboard/DashboardHeader"
+import { StatsCards } from "../components/dashboard/StatsCards"
+import { RendezVousTab } from "../components/dashboard/RendezVousTab"
+import { QuestionsTab } from "../components/dashboard/QuestionsTab"
+import { PatientsTab } from "../components/dashboard/PatientsTab"
+import { DossierModal } from "../components/dashboard/DossierModal"
+import { MedicalChatbot } from "../components/MedicalChatbot"
 
 // Données d'exemple simples
 const rendezVousData = [
@@ -28,7 +27,7 @@ const patientsData = [
   { id: 3, nom: "Marc Petit", age: 45, email: "marc.petit@email.com", telephone: "06.12.34.56.80" },
 ]
 
-export default function DashboardPage() {
+export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("rendez-vous")
   const [selectedPatient, setSelectedPatient] = useState<any>(null)
   const [showModal, setShowModal] = useState(false)
@@ -60,12 +59,12 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Sidebar
+      <Sidebar 
         activeTab={activeTab}
         onTabChange={setActiveTab}
         tabs={tabs}
       />
-
+      
       <DashboardHeader title={getPageTitle()} />
 
       <main className="ml-64 pt-16 p-6">
