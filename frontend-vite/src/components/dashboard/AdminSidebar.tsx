@@ -1,18 +1,18 @@
 import React from "react"
-import { Calendar, MessageSquare, Users, Home, LogOut } from "lucide-react"
+import { Users, Home, LogOut, Calendar, MessageSquare, UserCheck } from "lucide-react"
 
-interface SidebarProps {
+interface AdminSidebarProps {
   activeTab: string
   onTabChange: (tab: string) => void
   tabs: Array<{
     id: string
     label: string
-    count: number
+    count?: number
   }>
   onLogout?: () => void
 }
 
-export function Sidebar({ activeTab, onTabChange, tabs, onLogout }: SidebarProps) {
+export function AdminSidebar({ activeTab, onTabChange, tabs, onLogout }: AdminSidebarProps) {
   const handleLogout = () => {
     if (onLogout) {
       onLogout()
@@ -32,6 +32,8 @@ export function Sidebar({ activeTab, onTabChange, tabs, onLogout }: SidebarProps
       case "questions":
         return <MessageSquare className="w-5 h-5" />
       case "patients":
+        return <UserCheck className="w-5 h-5" />
+      case "medecins":
         return <Users className="w-5 h-5" />
       default:
         return <Home className="w-5 h-5" />
@@ -43,12 +45,12 @@ export function Sidebar({ activeTab, onTabChange, tabs, onLogout }: SidebarProps
       {/* Logo et titre */}
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-lg">M</span>
+          <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-lg">A</span>
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900">MedDashboard</h1>
-            <p className="text-sm text-gray-500">Gestion médicale</p>
+            <h1 className="text-xl font-bold text-gray-900">AdminDashboard</h1>
+            <p className="text-sm text-gray-500">Administration</p>
           </div>
         </div>
       </div>
@@ -61,7 +63,7 @@ export function Sidebar({ activeTab, onTabChange, tabs, onLogout }: SidebarProps
             onClick={() => onTabChange(tab.id)}
             className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-left transition-colors ${
               activeTab === tab.id
-                ? "bg-blue-50 text-blue-700 border border-blue-200"
+                ? "bg-red-50 text-red-700 border border-red-200"
                 : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
             }`}
           >
@@ -72,7 +74,7 @@ export function Sidebar({ activeTab, onTabChange, tabs, onLogout }: SidebarProps
             {tab.count !== undefined && (
               <span className={`px-2 py-1 text-xs rounded-full ${
                 activeTab === tab.id
-                  ? "bg-blue-100 text-blue-700"
+                  ? "bg-red-100 text-red-700"
                   : "bg-gray-100 text-gray-600"
               }`}>
                 {tab.count}
@@ -85,17 +87,17 @@ export function Sidebar({ activeTab, onTabChange, tabs, onLogout }: SidebarProps
       {/* Footer avec profil et déconnexion */}
       <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
         <div className="flex items-center space-x-3 mb-4">
-          <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-            <span className="text-white text-sm font-medium">DM</span>
+          <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
+            <span className="text-white text-sm font-medium">AD</span>
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-900">Dr. Martin</p>
-            <p className="text-xs text-gray-500">Médecin généraliste</p>
+            <p className="text-sm font-medium text-gray-900">Administrateur</p>
+            <p className="text-xs text-gray-500">Système médical</p>
           </div>
         </div>
-
+        
         <div className="space-y-1">
-          <button
+          <button 
             onClick={handleLogout}
             className="w-full flex items-center space-x-3 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
           >

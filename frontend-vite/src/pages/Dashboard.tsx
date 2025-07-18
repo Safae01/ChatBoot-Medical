@@ -1,114 +1,154 @@
 import React, { useState } from "react"
 import { Sidebar } from "../components/dashboard/Sidebar"
 import { DashboardHeader } from "../components/dashboard/DashboardHeader"
-import { StatsCards } from "../components/dashboard/StatsCards"
-import { RendezVousTab } from "../components/dashboard/RendezVousTab"
-import { QuestionsTab } from "../components/dashboard/QuestionsTab"
-import { PatientsTab } from "../components/dashboard/PatientsTab"
-import { DossierModal } from "../components/dashboard/DossierModal"
-import { MedicalChatbot } from "../components/MedicalChatbot"
+import { MedecinRendezVousTab } from "../components/dashboard/MedecinRendezVousTab"
+import { MedecinQuestionsTab } from "../components/dashboard/MedecinQuestionsTab"
+import { MedecinPatientsTab } from "../components/dashboard/MedecinPatientsTab"
+import { DossierMedicalModal } from "../components/dashboard/DossierMedicalModal"
+import { Users, Calendar, MessageSquare } from "lucide-react"
 
-// Données d'exemple simples
-const rendezVousData = [
-  { id: 1, patient: "Paul Dupont", date: "15/01/2024", heure: "09:00", statut: "Confirmé", motif: "Consultation cardiologie" },
-  { id: 2, patient: "Julie Moreau", date: "15/01/2024", heure: "10:30", statut: "En attente", motif: "Dermatologie" },
-  { id: 3, patient: "Marc Petit", date: "16/01/2024", heure: "14:00", statut: "Confirmé", motif: "Neurologie" },
-]
 
-const initialQuestionsData = [
-  { id: 1, question: "Depuis combien de temps ressentez-vous ces symptômes ?", medecin: "Dr. Martin" },
-  { id: 2, question: "Avez-vous des antécédents familiaux ?", medecin: "Dr. Dubois" },
-  { id: 3, question: "Prenez-vous des médicaments actuellement ?", medecin: "Dr. Leroy" },
-]
-
-const patientsData = [
-  { id: 1, nom: "Paul Dupont", age: 38, email: "paul.dupont@email.com", telephone: "06.12.34.56.78" },
-  { id: 2, nom: "Julie Moreau", age: 33, email: "julie.moreau@email.com", telephone: "06.12.34.56.79" },
-  { id: 3, nom: "Marc Petit", age: 45, email: "marc.petit@email.com", telephone: "06.12.34.56.80" },
-]
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState("rendez-vous")
+  const [activeTab, setActiveTab] = useState("dashboard")
   const [selectedPatient, setSelectedPatient] = useState<any>(null)
-  const [showModal, setShowModal] = useState(false)
-  const [questions, setQuestions] = useState(initialQuestionsData)
+  const [showDossierModal, setShowDossierModal] = useState(false)
+
+  // Données d'exemple pour les statistiques
+  const rendezVousCount = 4
+  const questionsCount = 4
+  const patientsCount = 5
 
   const handleViewDossier = (patient: any) => {
     setSelectedPatient(patient)
-    setShowModal(true)
+    setShowDossierModal(true)
   }
 
   const tabs = [
-    { id: "rendez-vous", label: "Rendez-vous", count: rendezVousData.length },
-    { id: "questions", label: " Questions Chatbot", count: questions.length },
-    { id: "patients", label: " Patients", count: patientsData.length }
+    { id: "dashboard", label: "Tableau de bord" },
+    { id: "rendez-vous", label: "Rendez-vous", count: rendezVousCount },
+    { id: "questions", label: "Questions Chatbot", count: questionsCount },
+    { id: "patients", label: "Patients", count: patientsCount }
   ]
 
   const getPageTitle = () => {
     switch (activeTab) {
+      case "dashboard":
+        return "Tableau de bord"
       case "rendez-vous":
-        return "Rendez-vous"
+        return "Mes Rendez-vous"
       case "questions":
         return "Questions Chatbot"
       case "patients":
-        return "Patients"
+        return "Mes Patients"
       default:
         return "Dashboard"
     }
   }
 
+  const renderStatsCards = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="bg-white rounded-xl shadow-sm border p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-600">Rendez-vous</p>
+            <p className="text-2xl font-bold text-gray-900">{rendezVousCount}</p>
+          </div>
+          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+            <Calendar className="w-6 h-6 text-blue-600" />
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl shadow-sm border p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-600">Questions</p>
+            <p className="text-2xl font-bold text-gray-900">{questionsCount}</p>
+          </div>
+          <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+            <MessageSquare className="w-6 h-6 text-purple-600" />
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl shadow-sm border p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-600">Patients</p>
+            <p className="text-2xl font-bold text-gray-900">{patientsCount}</p>
+          </div>
+          <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+            <Users className="w-6 h-6 text-green-600" />
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl shadow-sm border p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-600">Aujourd'hui</p>
+            <p className="text-2xl font-bold text-gray-900">2</p>
+          </div>
+          <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+            <Calendar className="w-6 h-6 text-orange-600" />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
+  const renderDashboardContent = () => (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Tableau de bord médecin</h2>
+        <p className="text-gray-600">Vue d'ensemble de votre activité médicale</p>
+      </div>
+
+      {renderStatsCards()}
+    </div>
+  )
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Sidebar 
+    <div className="min-h-screen bg-gray-100">
+      <Sidebar
         activeTab={activeTab}
         onTabChange={setActiveTab}
         tabs={tabs}
       />
-      
+
       <DashboardHeader title={getPageTitle()} />
 
       <main className="ml-64 pt-16 p-6">
         <div className="max-w-7xl mx-auto">
-          <div className="mb-8 mt-6">
-            <StatsCards
-              totalPatients={patientsData.length}
-              totalRendezVous={rendezVousData.length}
-              rendezVousAujourdhui={2}
-              totalQuestions={questions.length}
-            />
-          </div>
+          <div className="mt-6">
+            {activeTab === "dashboard" && renderDashboardContent()}
 
-          <div className="bg-white rounded-xl shadow-sm border">
-            <div className="p-6">
-              {activeTab === "rendez-vous" && (
-                <RendezVousTab
-                  rendezVous={rendezVousData}
-                  onViewDossier={handleViewDossier}
-                />
-              )}
+            {activeTab === "rendez-vous" && (
+              <div className="bg-white rounded-xl shadow-sm border p-6">
+                <MedecinRendezVousTab onViewDossier={handleViewDossier} />
+              </div>
+            )}
 
-              {activeTab === "questions" && (
-                <QuestionsTab
-                  questions={questions}
-                  onQuestionsChange={setQuestions}
-                />
-              )}
+            {activeTab === "questions" && (
+              <div className="bg-white rounded-xl shadow-sm border p-6">
+                <MedecinQuestionsTab />
+              </div>
+            )}
 
-              {activeTab === "patients" && (
-                <PatientsTab
-                  patients={patientsData}
-                  onViewDossier={handleViewDossier}
-                />
-              )}
-            </div>
+            {activeTab === "patients" && (
+              <div className="bg-white rounded-xl shadow-sm border p-6">
+                <MedecinPatientsTab onViewDossier={handleViewDossier} />
+              </div>
+            )}
           </div>
         </div>
       </main>
 
-      <DossierModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        selectedPatient={selectedPatient}
+      <DossierMedicalModal
+        isOpen={showDossierModal}
+        onClose={() => setShowDossierModal(false)}
+        patient={selectedPatient}
       />
     </div>
   )
