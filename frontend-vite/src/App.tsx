@@ -6,11 +6,11 @@ import Login from "./pages/Login"
 import MedicalChatbot from "./pages/MedicalChatbot"
 import Unauthorized from "./pages/Unauthorized.tsx"
 
-// Auth protection
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const token = localStorage.getItem("token")
-  return token ? <>{children}</> : <Navigate to="/login" />
-}
+// Auth protection (unused but kept for future use)
+// function ProtectedRoute({ children }: { children: React.ReactNode }) {
+//   const token = localStorage.getItem("token")
+//   return token ? <>{children}</> : <Navigate to="/login" />
+// }
 
 // Role protection
 function RoleProtectedRoute({
