@@ -6,7 +6,9 @@
 parameters:
 
 services:
+
      # default configuration for services in this file
+
     _defaults:
         autowire: true
         autoconfigure: true
@@ -17,4 +19,6 @@ services:
 
     # déclaration explicite du handler si nécessaire (optionnel en réalité, car déjà couvert par App\:)
     App\Security\LoginSuccessHandler:
+
         public: true 
+
