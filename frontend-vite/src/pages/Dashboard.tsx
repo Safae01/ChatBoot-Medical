@@ -25,7 +25,7 @@ export default function Dashboard() {
   }
 
   const tabs = [
-    { id: "dashboard", label: "Tableau de bord" },
+    { id: "dashboard", label: "Tableau de bord", count: 0 },
     { id: "rendez-vous", label: "Rendez-vous", count: rendezVousCount },
     { id: "questions", label: "Questions Chatbot", count: questionsCount },
     { id: "patients", label: "Patients", count: patientsCount }
