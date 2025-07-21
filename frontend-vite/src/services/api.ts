@@ -3,14 +3,13 @@ import axios from "axios"
 // Configuration de l'API
 const API_BASE_URL = "http://localhost:8088/api"
 
-// Types pour les réponses API
+// ✅ Types pour les réponses API
 export interface LoginResponse {
   token: string
   user?: {
     id: string
     email: string
-    name: string
-    role: string
+    roles: string[] // <-- corrigé
   }
 }
 
@@ -19,7 +18,7 @@ export interface ApiError {
   errors?: Record<string, string[]>
 }
 
-// Service d'authentification
+// ✅ Service d'authentification
 export const authService = {
   async login(email: string, password: string): Promise<LoginResponse> {
     try {
@@ -31,57 +30,55 @@ export const authService = {
       console.log("Réponse complète :", response.data)
 
       const token = response.data.token
-      console.log("Token extrait :", token)
-
       if (!token) {
         throw new Error("Le serveur n'a pas renvoyé de token.")
       }
 
-      return response.data
+      // Adapter la réponse backend à la structure frontend
+      const role = response.data.role
+      const roles = role ? [role] : []
+
+      return {
+        token,
+        user: {
+          id: response.data.id,
+          email: email, // On utilise l'email de la requête
+          roles: roles, // Convertir le rôle unique en tableau
+        }
+      }
     } catch (err: any) {
       console.error("Erreur login :", err)
 
       if (err.response) {
-        console.error("Détails erreur réponse:", err.response.data)
         throw new Error(
           "Erreur serveur : " + (err.response.data.message || "Login échoué")
         )
       } else if (err.request) {
-        console.error("Aucune réponse reçue :", err.request)
         throw new Error("Le serveur ne répond pas.")
       } else {
-        console.error("Erreur inconnue :", err.message)
         throw new Error("Une erreur est survenue.")
       }
     }
   },
 
   logout(): void {
-    // Déconnexion simple comme dans l'original
     localStorage.removeItem("token")
     localStorage.removeItem("user")
 
-    // Optionnel : appel API si le backend le supporte
     const token = localStorage.getItem("token")
     if (token) {
-      try {
-        // Appel async sans attendre la réponse
-        axios.post(`${API_BASE_URL}/logout`, {}, {
-          headers: {
-            "Authorization": `Bearer ${token}`,
-          },
-        }).catch(error => {
-          console.log("Logout API non disponible:", error.message)
-        })
-      } catch (error) {
-        console.log("Logout API non disponible")
-      }
+      axios.post(`${API_BASE_URL}/logout`, {}, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      }).catch(error => {
+        console.log("Logout API non disponible:", error.message)
+      })
     }
   },
 
   async getCurrentUser() {
     const token = localStorage.getItem("token")
-
     if (!token) {
       throw new Error("Pas de token")
     }
@@ -92,7 +89,6 @@ export const authService = {
           "Authorization": `Bearer ${token}`,
         },
       })
-
       return response.data
     } catch (error) {
       throw new Error("Token invalide")
@@ -100,7 +96,7 @@ export const authService = {
   }
 }
 
-// Utilitaire pour les requêtes authentifiées
+// ✅ Requêtes authentifiées
 export const apiRequest = async (endpoint: string, options: any = {}) => {
   const token = localStorage.getItem("token")
 
@@ -118,7 +114,6 @@ export const apiRequest = async (endpoint: string, options: any = {}) => {
     return response.data
   } catch (error: any) {
     if (error.response?.status === 401) {
-      // Token expiré, rediriger vers login
       localStorage.removeItem("token")
       localStorage.removeItem("user")
       window.location.href = "/login"
