@@ -8,11 +8,13 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\ApiSubresource;
 
 #[ApiResource]
 #[ORM\Entity(repositoryClass: SpecialiteRepository::class)]
 class Specialite
 {
+    
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -27,6 +29,7 @@ class Specialite
     /**
      * @var Collection<int, Medecin>
      */
+   
     #[ORM\OneToMany(targetEntity: Medecin::class, mappedBy: 'specialite')]
     private Collection $medecins;
 
