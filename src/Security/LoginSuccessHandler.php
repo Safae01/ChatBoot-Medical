@@ -41,4 +41,6 @@ class LoginSuccessHandler implements AuthenticationSuccessHandlerInterface
 
         return new JsonResponse($responseData);
     }
+
 }
+
