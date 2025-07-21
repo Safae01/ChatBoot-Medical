@@ -14,20 +14,26 @@ export default function Login() {
     setLoading(true)
     setError("")
 
-    console.log("handleSubmit triggered")
-    console.log("Email:", email, "Password:", password)
-
     try {
-      // Appel API via le service
       const data = await authService.login(email, password)
 
-      // Connexion réussie
       localStorage.setItem("token", data.token)
+
       if (data.user) {
         localStorage.setItem("user", JSON.stringify(data.user))
+
+        const roles = data.user.roles || []
+
+        if (roles.includes("ROLE_ADMIN")) {
+          navigate("/admin")
+        } else if (roles.includes("ROLE_MEDECIN")) {
+          navigate("/dashboard")
+        } else {
+          navigate("/unauthorized")
+        }
+      } else {
+        setError("Utilisateur non valide")
       }
-      setError("")
-      navigate("/dashboard")
     } catch (err: any) {
       setError(err.message || "Erreur de connexion au serveur")
       console.error("Erreur login:", err)
@@ -40,7 +46,6 @@ export default function Login() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="max-w-md w-full space-y-8">
         <div>
-         
           <p className="mt-2 text-center text-sm text-gray-600">
             Connectez-vous à votre compte
           </p>
@@ -48,9 +53,6 @@ export default function Login() {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
-              <label htmlFor="email" className="sr-only">
-                Email
-              </label>
               <input
                 id="email"
                 name="email"
@@ -63,9 +65,6 @@ export default function Login() {
               />
             </div>
             <div>
-              <label htmlFor="password" className="sr-only">
-                Mot de passe
-              </label>
               <input
                 id="password"
                 name="password"

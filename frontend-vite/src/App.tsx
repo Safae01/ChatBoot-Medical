@@ -1,14 +1,34 @@
-import React from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import Dashboard from './pages/Dashboard'
-import AdminDashboard from './pages/AdminDashboard'
-import Login from './pages/Login'
-import MedicalChatbot from './pages/MedicalChatbot'
+import React from "react"
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
+import Dashboard from "./pages/Dashboard"
+import AdminDashboard from "./pages/AdminDashboard"
+import Login from "./pages/Login"
+import MedicalChatbot from "./pages/MedicalChatbot"
+import Unauthorized from "./pages/Unauthorized.tsx"
 
-// Composant pour protéger les routes
+// Auth protection
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const token = localStorage.getItem('token')
+  const token = localStorage.getItem("token")
   return token ? <>{children}</> : <Navigate to="/login" />
+}
+
+// Role protection
+function RoleProtectedRoute({
+  children,
+  allowedRoles,
+}: {
+  children: React.ReactNode
+  allowedRoles: string[]
+}) {
+  const token = localStorage.getItem("token")
+  const user = JSON.parse(localStorage.getItem("user") || "{}")
+  const roles: string[] = user?.roles || []
+
+  if (!token) return <Navigate to="/login" />
+
+  const hasRole = roles.some((role) => allowedRoles.includes(role))
+
+  return hasRole ? <>{children}</> : <Navigate to="/unauthorized" />
 }
 
 function App() {
@@ -18,22 +38,26 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/chatbot" element={<MedicalChatbot />} />
+
           <Route
             path="/dashboard"
             element={
-              <ProtectedRoute>
+              <RoleProtectedRoute allowedRoles={["ROLE_MEDECIN"]}>
                 <Dashboard />
-              </ProtectedRoute>
+              </RoleProtectedRoute>
             }
           />
+
           <Route
             path="/admin"
             element={
-              <ProtectedRoute>
+              <RoleProtectedRoute allowedRoles={["ROLE_ADMIN"]}>
                 <AdminDashboard />
-              </ProtectedRoute>
+              </RoleProtectedRoute>
             }
           />
+
+          <Route path="/unauthorized" element={<Unauthorized />} />
           <Route path="/" element={<Navigate to="/chatbot" />} />
         </Routes>
       </Router>
