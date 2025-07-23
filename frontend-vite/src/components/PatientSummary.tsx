@@ -3,9 +3,17 @@ import type { PatientData } from "../types/medical"
 
 interface PatientSummaryProps {
   patientData: Partial<PatientData>
+  isSavingToBackend?: boolean
+  backendSaveSuccess?: boolean
+  backendSaveError?: string | null
 }
 
-export function PatientSummary({ patientData }: PatientSummaryProps) {
+export function PatientSummary({
+  patientData,
+  isSavingToBackend = false,
+  backendSaveSuccess = false,
+  backendSaveError = null
+}: PatientSummaryProps) {
   const hasData = Object.keys(patientData).length > 0
 
   if (!hasData) {
@@ -103,9 +111,39 @@ export function PatientSummary({ patientData }: PatientSummaryProps) {
           ))}
         </div>
         
+        {/* Statut de sauvegarde backend */}
+        {(isSavingToBackend || backendSaveSuccess || backendSaveError) && (
+          <div className="mt-4 p-3 rounded-lg border">
+            {isSavingToBackend && (
+              <div className="flex items-center gap-2 text-blue-600">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                <span className="text-sm font-medium">Sauvegarde au backend en cours...</span>
+              </div>
+            )}
+
+            {backendSaveSuccess && !isSavingToBackend && (
+              <div className="flex items-center gap-2 text-green-600">
+                <span className="text-sm font-medium">✅ Données sauvegardées dans le backend !</span>
+              </div>
+            )}
+
+            {backendSaveError && !isSavingToBackend && (
+              <div className="flex items-center gap-2 text-red-600">
+                <span className="text-sm font-medium">❌ Erreur backend: {backendSaveError}</span>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="mt-6 p-4 bg-blue-50 rounded-lg">
           <p className="text-blue-800 text-sm">
             ℹ️ Ces informations sont automatiquement collectées pendant votre conversation avec l'assistant médical.
+            {backendSaveSuccess && (
+              <>
+                <br />
+                <span className="font-medium">🔄 Les données sont maintenant synchronisées avec le backend.</span>
+              </>
+            )}
           </p>
         </div>
       </CardContent>

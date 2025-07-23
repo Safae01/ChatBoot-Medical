@@ -2,45 +2,76 @@ import { useState } from "react"
 import { Button } from "./ui/Button"
 import { Input } from "./ui/Input"
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/Card"
-import { SPECIALITES, MEDECINS, getMedecinsBySpecialite } from "../data/medical-data"
 import type { RendezVous } from "../types/medical"
+import { rendezVousService } from "../services/api"
 
 interface AppointmentBookingProps {
   onBookAppointment: (appointment: RendezVous) => void
+  patientData?: any // Pour récupérer les données du chatbot
 }
 
-export function AppointmentBooking({ onBookAppointment }: AppointmentBookingProps) {
-  const [selectedSpecialite, setSelectedSpecialite] = useState<number | null>(null)
-  const [selectedMedecin, setSelectedMedecin] = useState<number | null>(null)
+export function AppointmentBooking({ onBookAppointment, patientData }: AppointmentBookingProps) {
   const [selectedDate, setSelectedDate] = useState("")
   const [selectedTime, setSelectedTime] = useState("")
   const [motif, setMotif] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+  const [submitSuccess, setSubmitSuccess] = useState(false)
+  const [hasSubmitted, setHasSubmitted] = useState(false) // Éviter la double soumission
 
-  const availableMedecins = selectedSpecialite ? getMedecinsBySpecialite(selectedSpecialite) : []
+  // Récupérer la spécialité et médecin depuis les données du chatbot
+  const selectedSpecialite = patientData?.specialite
+  const selectedMedecinId = patientData?.medecin_id
 
   const timeSlots = [
     "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
     "14:00", "14:30", "15:00", "15:30", "16:00", "16:30"
   ]
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    if (!selectedDate || !selectedTime || !motif) {
-      alert("Veuillez remplir tous les champs obligatoires")
+    setSubmitError(null)
+
+    // Éviter la double soumission
+    if (isSubmitting || hasSubmitted) {
+      console.log('Soumission déjà en cours ou terminée, ignorée')
       return
     }
 
-    const appointment: RendezVous = {
-      date: selectedDate,
-      heure: selectedTime,
-      motif,
-      confirme: true,
-      specialiteId: selectedSpecialite || undefined,
-      medecinId: selectedMedecin || undefined
+    if (!selectedDate || !selectedTime || !motif) {
+      setSubmitError("Veuillez remplir tous les champs obligatoires")
+      return
     }
 
-    onBookAppointment(appointment)
+    setIsSubmitting(true)
+    setHasSubmitted(true)
+
+    try {
+      // Créer l'objet rendez-vous pour l'affichage local
+      const appointment: RendezVous = {
+        date: selectedDate,
+        heure: selectedTime,
+        motif,
+        confirme: true,
+        specialiteId: selectedSpecialite ? Number(selectedSpecialite) : undefined,
+        medecinId: selectedMedecinId ? Number(selectedMedecinId) : undefined
+      }
+
+      // Sauvegarder en base de données via ApiPlatform
+      await rendezVousService.createRendezVous(appointment, patientData)
+
+      setSubmitSuccess(true)
+
+      // Appeler le callback parent pour l'affichage
+      onBookAppointment(appointment)
+
+    } catch (error: any) {
+      console.error('Erreur lors de la création du rendez-vous:', error)
+      setSubmitError(error.message || 'Erreur lors de la création du rendez-vous')
+      setHasSubmitted(false) // Permettre une nouvelle tentative en cas d'erreur
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -50,48 +81,7 @@ export function AppointmentBooking({ onBookAppointment }: AppointmentBookingProp
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Spécialité */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Spécialité (optionnel)
-            </label>
-            <select
-              value={selectedSpecialite || ""}
-              onChange={(e) => {
-                setSelectedSpecialite(e.target.value ? Number(e.target.value) : null)
-                setSelectedMedecin(null)
-              }}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Consultation générale</option>
-              {SPECIALITES.map((specialite) => (
-                <option key={specialite.id} value={specialite.id}>
-                  {specialite.nom}
-                </option>
-              ))}
-            </select>
-          </div>
 
-          {/* Médecin */}
-          {selectedSpecialite && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Médecin (optionnel)
-              </label>
-              <select
-                value={selectedMedecin || ""}
-                onChange={(e) => setSelectedMedecin(e.target.value ? Number(e.target.value) : null)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Aucune préférence</option>
-                {availableMedecins.map((medecin) => (
-                  <option key={medecin.id} value={medecin.id}>
-                    Dr. {medecin.prenom} {medecin.nom}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
 
           {/* Date */}
           <div>
@@ -143,9 +133,35 @@ export function AppointmentBooking({ onBookAppointment }: AppointmentBookingProp
             />
           </div>
 
+          {/* Messages d'erreur et de succès */}
+          {submitError && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+              <p className="text-red-600 text-sm">❌ {submitError}</p>
+            </div>
+          )}
+
+          {submitSuccess && (
+            <div className="p-3 bg-green-50 border border-green-200 rounded-md">
+              <p className="text-green-600 text-sm">✅ Rendez-vous créé et sauvegardé avec succès !</p>
+            </div>
+          )}
+
           {/* Submit */}
-          <Button type="submit" className="w-full">
-            Confirmer le rendez-vous
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={isSubmitting || hasSubmitted}
+          >
+            {isSubmitting ? (
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                Création en cours...
+              </div>
+            ) : hasSubmitted ? (
+              '✅ Rendez-vous créé'
+            ) : (
+              'Confirmer le rendez-vous'
+            )}
           </Button>
         </form>
       </CardContent>

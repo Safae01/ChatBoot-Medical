@@ -35,5 +35,10 @@ security:
     access_control:
         - { path: ^/api/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/specialites, roles: PUBLIC_ACCESS }      # Accès public aux spécialités
+        - { path: ^/api/medecins, roles: PUBLIC_ACCESS }         # Accès public aux médecins
+        - { path: ^/api/chatbot/patient, roles: PUBLIC_ACCESS }  # Accès public au chatbot
+        - { path: ^/api/rendez_vouses, roles: PUBLIC_ACCESS }    # Accès public aux rendez-vous (ApiPlatform)
+        - { path: ^/api/test, roles: PUBLIC_ACCESS }             # Endpoint de test
         - { path: ^/api/docs, roles: PUBLIC_ACCESS }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }

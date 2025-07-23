@@ -2,6 +2,7 @@ import { useState, useCallback } from "react"
 import type { ChatMessage, PatientData, Question } from "../types/medical"
 import { MEDICAL_QUESTIONS, WELCOME_MESSAGE, COMPLETION_MESSAGE } from "../data/questions"
 import { validateInput } from "../utils/validation"
+import { chatbotService } from "../services/api"
 
 export function useMedicalChat(onQuestionnaireComplete?: () => void) {
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -18,16 +19,48 @@ export function useMedicalChat(onQuestionnaireComplete?: () => void) {
   const [isCompleted, setIsCompleted] = useState(false)
   const [isStarted, setIsStarted] = useState(false)
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null)
+  const [isSavingToBackend, setIsSavingToBackend] = useState(false)
+  const [backendSaveError, setBackendSaveError] = useState<string | null>(null)
+  const [backendSaveSuccess, setBackendSaveSuccess] = useState(false)
 
   const addMessage = useCallback((text: string, isBot: boolean) => {
     const newMessage: ChatMessage = {
-      id: Date.now().toString(),
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // ID unique avec timestamp + random
       text,
       isBot,
       timestamp: new Date(),
     }
     setMessages((prev) => [...prev, newMessage])
   }, [])
+
+  // Fonction pour sauvegarder les données au backend
+  const saveToBackend = useCallback(async (data: Partial<PatientData>) => {
+    setIsSavingToBackend(true)
+    setBackendSaveError(null)
+    setBackendSaveSuccess(false)
+
+    try {
+      console.log('Sauvegarde des données patient au backend:', data)
+      const response = await chatbotService.savePatientData(data)
+
+      setBackendSaveSuccess(true)
+      addMessage(`✅ Vos données ont été sauvegardées avec succès ! Patient ID: ${response.patient_id}`, true)
+
+      // Sauvegarder le patient_id dans patientData pour l'utiliser dans le formulaire de RDV
+      setPatientData(prev => ({
+        ...prev,
+        patient_id: response.patient_id
+      }))
+
+      console.log('Données sauvegardées avec succès:', response)
+    } catch (error: any) {
+      console.error('Erreur lors de la sauvegarde:', error)
+      setBackendSaveError(error.message)
+      addMessage(`❌ Erreur lors de la sauvegarde: ${error.message}`, true)
+    } finally {
+      setIsSavingToBackend(false)
+    }
+  }, [addMessage])
 
   // Ajout d'un mode "pré-question" pour le choix dossier médical
   const [awaitingDossierResponse, setAwaitingDossierResponse] = useState(true)
@@ -45,7 +78,7 @@ export function useMedicalChat(onQuestionnaireComplete?: () => void) {
   }, [addMessage])
 
   const handleAnswer = useCallback(
-    (answer: string | string[] | import("../types/medical").FileData[]) => {
+    (answer: string | string[] | import("../types/medical").FileData[] | number) => {
       if (!currentQuestion) return
 
       // Affichage du message utilisateur
@@ -53,6 +86,9 @@ export function useMedicalChat(onQuestionnaireComplete?: () => void) {
       if (Array.isArray(answer) && answer.length > 0 && typeof answer[0] === "object" && 'name' in answer[0]) {
         // C'est un tableau de fichiers
         answerText =` 📎 ${answer.length} fichier(s) envoyé(s)`
+      } else if (typeof answer === "number") {
+        // C'est un ID de médecin, on affiche juste l'ID pour l'instant
+        answerText = `Médecin sélectionné (ID: ${answer})`
       } else {
         answerText = Array.isArray(answer) ? answer.join(", ") : answer as string
       }
@@ -62,9 +98,12 @@ export function useMedicalChat(onQuestionnaireComplete?: () => void) {
       let isValid = true
       let errorMsg = ""
       if (!(Array.isArray(answer) && answer.length > 0 && typeof answer[0] === "object" && 'name' in answer[0])) {
-        const validation = validateInput(currentQuestion.id, answer as string | string[])
-        isValid = validation.isValid
-        errorMsg = validation.error || ""
+        // Pas de validation pour les questions de spécialité et médecin (gérées par les composants)
+        if (currentQuestion.id !== "specialite" && currentQuestion.id !== "medecin_id") {
+          const validation = validateInput(currentQuestion.id, answer as string | string[])
+          isValid = validation.isValid
+          errorMsg = validation.error || ""
+        }
       }
       if (!isValid) {
         addMessage(`❌ ${errorMsg}`, true)
@@ -110,14 +149,31 @@ export function useMedicalChat(onQuestionnaireComplete?: () => void) {
         setCurrentQuestion(null)
         setTimeout(() => {
           addMessage(COMPLETION_MESSAGE, true)
-          // Déclencher l'affichage du formulaire de rendez-vous après le message
-          setTimeout(() => {
-            onQuestionnaireComplete?.()
-          }, 500)
+
+          // Sauvegarder les données au backend
+          setTimeout(async () => {
+            // Récupérer les données actuelles avec la dernière réponse
+            setPatientData((currentData) => {
+              const finalData = {
+                ...currentData,
+                [currentQuestion.id]: answer,
+              }
+
+              // Sauvegarder au backend
+              saveToBackend(finalData)
+
+              return finalData
+            })
+
+            // Déclencher l'affichage du formulaire de rendez-vous après la sauvegarde
+            setTimeout(() => {
+              onQuestionnaireComplete?.()
+            }, 2000) // Délai plus long pour laisser le temps à la sauvegarde
+          }, 1000)
         }, 1000)
       }
     },
-    [currentQuestion, currentQuestionIndex, addMessage],
+    [currentQuestion, currentQuestionIndex, addMessage, saveToBackend, onQuestionnaireComplete],
   )
 
   const handleUserMessage = useCallback(
@@ -183,5 +239,8 @@ export function useMedicalChat(onQuestionnaireComplete?: () => void) {
     awaitingPatientName,
     awaitingPatientFirstName,
     existingPatientData,
+    isSavingToBackend,
+    backendSaveError,
+    backendSaveSuccess,
   }
 }

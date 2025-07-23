@@ -15,13 +15,21 @@ export const MEDICAL_QUESTIONS: Question[] = [
     required: true,
     category: "identite",
   },
- {
-    id: "fichier externe",
-    text: "Avez-vous des radios, analyses ou documents médicaux à partager ?",
-    type: "file",
-    required: false,
-    category: "documents",
-    accept: ".jpg,.jpeg,.png,.pdf,.doc,.docx",
+    {
+    id: "specialite",
+    text: "Quelle spécialité médicale souhaitez-vous consulter ?",
+    type: "select",
+    options: [], // Sera rempli dynamiquement depuis le backend
+    required: true,
+    category: "consultation",
+  },
+  {
+    id: "medecin_id",
+    text: "Quel médecin souhaitez-vous consulter ?",
+    type: "select",
+    options: [], // Sera rempli dynamiquement selon la spécialité choisie
+    required: true,
+    category: "consultation",
   },
   {
     id: "date_naissance",
@@ -34,7 +42,7 @@ export const MEDICAL_QUESTIONS: Question[] = [
     id: "sexe",
     text: "Quel est votre sexe ?",
     type: "select",
-    options: ["Homme", "Femme", "Autre"],
+    options: ["Homme", "Femme"],
     required: true,
     category: "identite",
   },
@@ -67,58 +75,29 @@ export const MEDICAL_QUESTIONS: Question[] = [
     category: "symptomes",
   },
   {
-    id: "dureeSymptomes",
-    text: "Depuis combien de temps avez-vous ces symptômes ?",
-    type: "select",
-    options: ["Moins de 24h", "1-3 jours", "1 semaine", "2-4 semaines", "Plus d'un mois"],
-    required: true,
-    category: "symptomes",
-  },
-
-  {
-    id: "antecedentsMedicaux",
-    text: "Avez-vous des antécédents médicaux ? (Sélectionnez tous ceux qui s'appliquent)",
-    type: "multiselect",
-    options: [
-      "Diabète",
-      "Hypertension",
-      "Maladie cardiaque",
-      "Asthme",
-      "Cancer",
-      "Dépression/Anxiété",
-      "Chirurgies antérieures",
-      "Aucun",
-      "Autre",
-    ],
-    required: true,
-    category: "antecedents",
-  },
-  {
-    id: "medicamentsActuels",
-    text: "Prenez-vous actuellement des médicaments ? Si oui, lesquels ?",
+    id: "traitement",
+    text: "Prenez-vous actuellement des médicaments ou suivez-vous un traitement ? Si oui, lesquels ?",
     type: "text",
     required: false,
     category: "medicaments",
   },
-
   {
-    id: "antecedensFamiliaux",
-    text: "Y a-t-il des maladies importantes dans votre famille ? (Sélectionnez toutes celles qui s'appliquent)",
-    type: "multiselect",
-    options: [
-      "Diabète",
-      "Maladie cardiaque",
-      "Cancer",
-      "Hypertension",
-      "Maladie mentale",
-      "Maladie génétique",
-      "Aucun antécédent connu",
-      "Autre",
-    ],
+    id: "antecedentsMedicaux",
+    text: "Avez-vous des antécédents médicaux ? ",
+    type: "text",
+    required: true,
+    category: "antecedents",
+  }, 
+  {
+    id: "fichier externe",
+    text: "Avez-vous des radios, analyses ou documents médicaux à partager ?",
+    type: "file",
     required: false,
-    category: "famille",
+    category: "documents",
+    accept: ".jpg,.jpeg,.png,.pdf,.doc,.docx",
   },
- 
+
+
 ]
 
 export const WELCOME_MESSAGE =

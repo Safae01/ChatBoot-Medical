@@ -5,13 +5,15 @@ import { Checkbox } from "./ui/Checkbox"
 import type { Question, FileData } from "../types/medical"
 import { validateInput } from "../utils/validation"
 import { FileUpload } from "./FileUpload"
+import { SpecialiteMedecinSelector } from "./SpecialiteMedecinSelector"
 
 interface QuestionInputProps {
   question: Question
-  onAnswer: (answer: string | string[] | FileData[]) => void
+  onAnswer: (answer: string | string[] | FileData[] | number) => void
+  patientData?: any // Pour accéder à la spécialité sélectionnée
 }
 
-export function QuestionInput({ question, onAnswer }: QuestionInputProps) {
+export function QuestionInput({ question, onAnswer, patientData }: QuestionInputProps) {
   const [textAnswer, setTextAnswer] = useState("")
   const [selectedOptions, setSelectedOptions] = useState<string[]>([])
   const [selectedOption, setSelectedOption] = useState("")
@@ -141,6 +143,18 @@ export function QuestionInput({ question, onAnswer }: QuestionInputProps) {
             accept={question.accept || undefined}
           />
         </div>
+      )}
+
+      {/* Sélecteur spécialisé pour spécialité et médecin */}
+      {(question.id === "specialite" || question.id === "medecin_id") && (
+        <SpecialiteMedecinSelector
+          questionType={question.id as "specialite" | "medecin_id"}
+          selectedSpecialite={patientData?.specialite}
+          onAnswer={(answer) => {
+            setError("")
+            onAnswer(answer)
+          }}
+        />
       )}
 
       {error && <p className="text-red-500 text-sm">{error}</p>}

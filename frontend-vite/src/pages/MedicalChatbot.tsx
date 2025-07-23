@@ -39,6 +39,9 @@ export default function MedicalChatbot() {
     awaitingPatientName,
     awaitingPatientFirstName,
     existingPatientData,
+    isSavingToBackend,
+    backendSaveError,
+    backendSaveSuccess,
   } = useMedicalChat(handleQuestionnaireComplete)
 
   const handleSendMessage = () => {
@@ -133,7 +136,10 @@ export default function MedicalChatbot() {
                 {/* Formulaire de RDV si déclenché */}
                 {showAppointmentForm && !appointment && (
                   <div className="mt-4">
-                    <AppointmentBooking onBookAppointment={handleBookAppointment} />
+                    <AppointmentBooking
+                      onBookAppointment={handleBookAppointment}
+                      patientData={patientData}
+                    />
                   </div>
                 )}
               </div>
@@ -141,7 +147,11 @@ export default function MedicalChatbot() {
               {/* Zone de réponse utilisateur */}
               <div className="border-t bg-gray-50 px-6 py-4">
                 {currentQuestion ? (
-                  <QuestionInput question={currentQuestion} onAnswer={handleAnswer} />
+                  <QuestionInput
+                    question={currentQuestion}
+                    onAnswer={handleAnswer}
+                    patientData={patientData}
+                  />
                 ) : awaitingDossierResponse ? (
                   <div className="flex w-full space-x-2">
                     <Input
@@ -193,6 +203,26 @@ export default function MedicalChatbot() {
                 ) : (
                   <div className="w-full flex flex-col items-center gap-2">
                     <p className="text-gray-500">Questionnaire terminé ! Ne quittez pas avant de prendre votre rendez-vous</p>
+
+                    {/* Indicateur de sauvegarde */}
+                    {isSavingToBackend && (
+                      <div className="flex items-center gap-2 text-blue-600">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                        <span className="text-sm">Sauvegarde en cours...</span>
+                      </div>
+                    )}
+
+                    {backendSaveSuccess && (
+                      <div className="flex items-center gap-2 text-green-600">
+                        <span className="text-sm">✅ Données sauvegardées avec succès !</span>
+                      </div>
+                    )}
+
+                    {backendSaveError && (
+                      <div className="flex items-center gap-2 text-red-600">
+                        <span className="text-sm">❌ Erreur: {backendSaveError}</span>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -204,7 +234,12 @@ export default function MedicalChatbot() {
       {/* Section avec résumé */}
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
         <div>
-          <PatientSummary patientData={patientData} />
+          <PatientSummary
+            patientData={patientData}
+            isSavingToBackend={isSavingToBackend}
+            backendSaveSuccess={backendSaveSuccess}
+            backendSaveError={backendSaveError}
+          />
         </div>
       </div>
     </div>
