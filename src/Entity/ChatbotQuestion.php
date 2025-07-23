@@ -20,7 +20,7 @@ class ChatbotQuestion
 
     #[ORM\ManyToOne(inversedBy: 'questions')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Medecin $medecin = null;
+    private ?Specialite $specialite = null;
 
     public function getId(): ?int
     {
@@ -35,19 +35,17 @@ class ChatbotQuestion
     public function setQuestion(string $question): static
     {
         $this->question = $question;
-
         return $this;
     }
 
-    public function getMedecin(): ?Medecin
+    public function getSpecialite(): ?Specialite
     {
-        return $this->medecin;
+        return $this->specialite;
     }
 
-    public function setMedecin(?Medecin $medecin): static
+    public function setSpecialite(?Specialite $specialite): static
     {
-        $this->medecin = $medecin;
-
+        $this->specialite = $specialite;
         return $this;
     }
 }
