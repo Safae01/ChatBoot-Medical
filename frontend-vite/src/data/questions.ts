@@ -15,6 +15,22 @@ export const MEDICAL_QUESTIONS: Question[] = [
     required: true,
     category: "identite",
   },
+    {
+    id: "specialite",
+    text: "Quelle spécialité médicale souhaitez-vous consulter ?",
+    type: "select",
+    options: [], // Sera rempli dynamiquement depuis le backend
+    required: true,
+    category: "consultation",
+  },
+  {
+    id: "medecin_id",
+    text: "Quel médecin souhaitez-vous consulter ?",
+    type: "select",
+    options: [], // Sera rempli dynamiquement selon la spécialité choisie
+    required: true,
+    category: "consultation",
+  },
   {
     id: "date_naissance",
     text: "Quel est votre date de naissance ?",
@@ -59,6 +75,13 @@ export const MEDICAL_QUESTIONS: Question[] = [
     category: "symptomes",
   },
   {
+    id: "traitement",
+    text: "Prenez-vous actuellement des médicaments ou suivez-vous un traitement ? Si oui, lesquels ?",
+    type: "text",
+    required: false,
+    category: "medicaments",
+  },
+  {
     id: "antecedentsMedicaux",
     text: "Avez-vous des antécédents médicaux ? ",
     type: "text",
@@ -73,6 +96,7 @@ export const MEDICAL_QUESTIONS: Question[] = [
     category: "documents",
     accept: ".jpg,.jpeg,.png,.pdf,.doc,.docx",
   },
+
 
 ]
 
