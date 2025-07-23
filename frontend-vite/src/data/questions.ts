@@ -3,7 +3,7 @@ import type { Question } from "../types/medical"
 export const MEDICAL_QUESTIONS: Question[] = [
   {
     id: "nom",
-    text: "Bonjour ! Je vais vous aider à préparer votre dossier médical. Quel est votre nom de famille ?",
+    text: "Je vais vous aider à préparer votre dossier médical. Quel est votre nom de famille ?",
     type: "text",
     required: true,
     category: "identite",

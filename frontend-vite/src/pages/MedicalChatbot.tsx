@@ -39,6 +39,7 @@ export default function MedicalChatbot() {
     awaitingPatientName,
     awaitingPatientFirstName,
     existingPatientData,
+    isVerifyingPatient,
     isSavingToBackend,
     backendSaveError,
     backendSaveSuccess,
@@ -49,13 +50,8 @@ export default function MedicalChatbot() {
       addMessage(userInput, false)
       handleUserMessage(userInput)
 
-      // Afficher le formulaire de rendez-vous dans le chatbot pour patient existant
-      if (awaitingPatientFirstName) {
-        // Après avoir saisi le prénom pour patient existant
-        setTimeout(() => {
-          setShowAppointmentForm(true)
-        }, 1000)
-      }
+      // Le formulaire de rendez-vous sera affiché seulement après vérification du dossier
+      // (géré dans useMedicalChat via onQuestionnaireComplete)
 
       setUserInput("")
     }
@@ -133,8 +129,8 @@ export default function MedicalChatbot() {
                   </div>
                 ))}
 
-                {/* Formulaire de RDV si déclenché */}
-                {showAppointmentForm && !appointment && (
+                {/* Formulaire de RDV si déclenché ET vérification terminée */}
+                {showAppointmentForm && !appointment && !awaitingDossierResponse && !awaitingPatientName && !awaitingPatientFirstName && !isVerifyingPatient && (
                   <div className="mt-4">
                     <AppointmentBooking
                       onBookAppointment={handleBookAppointment}

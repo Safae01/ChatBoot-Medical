@@ -2,7 +2,7 @@ import { useState, useCallback } from "react"
 import type { ChatMessage, PatientData, Question } from "../types/medical"
 import { MEDICAL_QUESTIONS, WELCOME_MESSAGE, COMPLETION_MESSAGE } from "../data/questions"
 import { validateInput } from "../utils/validation"
-import { chatbotService } from "../services/api"
+import { chatbotService, patientService } from "../services/api"
 
 export function useMedicalChat(onQuestionnaireComplete?: () => void) {
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -68,6 +68,7 @@ export function useMedicalChat(onQuestionnaireComplete?: () => void) {
   const [awaitingPatientName, setAwaitingPatientName] = useState(false)
   const [awaitingPatientFirstName, setAwaitingPatientFirstName] = useState(false)
   const [existingPatientData, setExistingPatientData] = useState<{nom?: string, prenom?: string}>({})
+  const [isVerifyingPatient, setIsVerifyingPatient] = useState(false)
 
   const startQuestionnaire = useCallback(() => {
     setIsStarted(true)
@@ -188,7 +189,12 @@ export function useMedicalChat(onQuestionnaireComplete?: () => void) {
           }, 500)
         } else if (message.toLowerCase().includes("non")) {
           setAwaitingDossierResponse(false)
-          startQuestionnaire()
+          setTimeout(() => {
+            addMessage("Parfait ! Je vais vous aider à créer votre dossier médical.", true)
+            setTimeout(() => {
+              startQuestionnaire()
+            }, 500)
+          }, 500)
         } else {
           addMessage("Merci de répondre par 'oui' ou 'non'.", true)
         }
@@ -207,14 +213,68 @@ export function useMedicalChat(onQuestionnaireComplete?: () => void) {
       }
 
       if (awaitingPatientFirstName) {
-        // Sauvegarder le prénom et aller aux rendez-vous
-        setExistingPatientData(prev => ({ ...prev, prenom: message.trim() }))
+        // Sauvegarder le prénom et vérifier l'existence du patient
+        const prenom = message.trim()
+        const nom = existingPatientData.nom || ''
+
+        setExistingPatientData(prev => ({ ...prev, prenom }))
         setAwaitingPatientFirstName(false)
-        setIsStarted(false)
-        setCurrentQuestion(null)
-        setIsCompleted(true)
-        setTimeout(() => {
-          addMessage(`Merci ${existingPatientData.nom} ${message.trim()} ! Je vais maintenant vous afficher vos rendez-vous disponibles.`, true)
+
+        // Vérifier si le patient existe dans la base de données
+        setTimeout(async () => {
+          try {
+            setIsVerifyingPatient(true)
+            addMessage("🔍 Vérification de votre dossier en cours...", true)
+
+            const patientCheck = await patientService.checkPatientExists(nom, prenom)
+
+            if (patientCheck.exists) {
+              // Patient existe - aller directement aux rendez-vous
+              addMessage(`✅ Parfait ${nom} ${prenom} ! J'ai trouvé votre dossier médical.`, true)
+
+              // Afficher les informations du médecin traitant si disponible
+              if (patientCheck.patient_data?.medecin_traitant) {
+                setTimeout(() => {
+                  addMessage(`👨‍⚕️ Votre médecin traitant : ${patientCheck.patient_data.medecin_traitant}`, true)
+                }, 500)
+              }
+
+              setTimeout(() => {
+                addMessage("Je vais maintenant vous proposer de prendre un rendez-vous.", true)
+                setPatientData({
+                  ...patientCheck.patient_data,
+                  patient_id: patientCheck.patient_id,
+                  nom,
+                  prenom,
+                  // S'assurer qu'on a un medecin_id valide
+                  medecin_id: patientCheck.patient_data?.medecin_id || 1 // ID par défaut si pas de médecin
+                })
+                setIsCompleted(true)
+                setIsVerifyingPatient(false)
+                onQuestionnaireComplete?.()
+              }, 1500)
+            } else {
+              // Patient n'existe pas - créer directement un nouveau dossier
+              addMessage(`❌ Désolé ${nom} ${prenom}, je n'ai pas trouvé votre dossier médical.`, true)
+              setTimeout(() => {
+                addMessage("Pas de problème ! Je vais vous aider à créer votre dossier médical.", true)
+                setTimeout(() => {
+                  setIsVerifyingPatient(false)
+                  startQuestionnaire()
+                }, 1000)
+              }, 1000)
+            }
+          } catch (error: any) {
+            console.error('Erreur lors de la vérification du patient:', error)
+            addMessage(`❌ Erreur lors de la vérification de votre dossier.`, true)
+            setTimeout(() => {
+              addMessage("Pas de problème ! Je vais vous aider à créer votre dossier médical.", true)
+              setTimeout(() => {
+                setIsVerifyingPatient(false)
+                startQuestionnaire()
+              }, 1000)
+            }, 1000)
+          }
         }, 500)
         return
       }
@@ -239,6 +299,7 @@ export function useMedicalChat(onQuestionnaireComplete?: () => void) {
     awaitingPatientName,
     awaitingPatientFirstName,
     existingPatientData,
+    isVerifyingPatient,
     isSavingToBackend,
     backendSaveError,
     backendSaveSuccess,

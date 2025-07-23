@@ -420,10 +420,14 @@ export const rendezVousService = {
         disponible: false, // Le champ existe dans l'entité mais pas en DB
         // Relations ApiPlatform (IRI format) - Utiliser les IDs si disponibles
         patient: `/api/patients/${actualPatientId}`, // Patient obligatoire
-        ...(appointmentData.medecinId && { medecin: `/api/medecins/${appointmentData.medecinId}` })
+        // Médecin : utiliser celui du patient existant ou celui sélectionné dans le chatbot
+        ...(appointmentData.medecinId && { medecin: `/api/medecins/${appointmentData.medecinId}` }),
+        ...(patientData.medecin_id && !appointmentData.medecinId && { medecin: `/api/medecins/${patientData.medecin_id}` })
       }
 
       console.log('📤 Données ApiPlatform pour le rendez-vous:', apiData)
+      console.log('🔍 Médecin ID dans appointmentData:', appointmentData.medecinId)
+      console.log('🔍 Médecin ID dans patientData:', patientData.medecin_id)
 
       // URL correcte ApiPlatform pour RendezVous
       const response = await axios.post(`${API_BASE_URL}/rendez_vouses`, apiData, {
@@ -463,6 +467,78 @@ export const rendezVousService = {
       }
 
       throw new Error(error.message || 'Erreur lors de la création du rendez-vous')
+    }
+  }
+}
+
+// ✅ Service pour vérifier si un patient existe
+export const patientService = {
+  async checkPatientExists(nom: string, prenom: string): Promise<any> {
+    try {
+      console.log('🔍 Vérification de l\'existence du patient:', { nom, prenom })
+
+      // Appeler l'endpoint backend avec les données minimales
+      const response = await axios.post(`${API_BASE_URL}/chatbot/patient`, {
+        nom: nom.trim(),
+        prenom: prenom.trim(),
+        // Données minimales pour éviter les erreurs de validation
+        telephone: '',
+        cin: '',
+        sexe: '',
+        adresse: '',
+        dateNaissance: '2000-01-01',
+        symptomes: ''
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+
+      console.log('✅ Réponse de vérification patient:', response.data)
+
+      // Si on a un patient_id dans la réponse, le patient existe
+      const patientExists = !!(response.data.patient_id)
+
+      return {
+        exists: patientExists,
+        patient_id: response.data.patient_id || null,
+        patient_data: response.data || null
+      }
+
+    } catch (error: any) {
+      console.error('❌ Erreur lors de la vérification du patient:', error)
+      console.log('📦 Détails de l\'erreur:', error.response?.data)
+
+      if (error.response?.status === 400) {
+        // Erreur 400 peut indiquer que le patient n'existe pas ou données invalides
+        const errorMessage = error.response?.data?.message || error.response?.data?.detail || ''
+
+        if (errorMessage.toLowerCase().includes('not found') ||
+            errorMessage.toLowerCase().includes('introuvable') ||
+            errorMessage.toLowerCase().includes('existe pas')) {
+          return {
+            exists: false,
+            patient_id: null,
+            patient_data: null
+          }
+        }
+      }
+
+      if (error.response?.status === 404) {
+        // Patient n'existe pas
+        return {
+          exists: false,
+          patient_id: null,
+          patient_data: null
+        }
+      }
+
+      // Pour toute autre erreur, considérer que le patient n'existe pas
+      return {
+        exists: false,
+        patient_id: null,
+        patient_data: null
+      }
     }
   }
 }
