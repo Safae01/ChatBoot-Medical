@@ -3,7 +3,6 @@
 namespace App\Entity;
 
 use App\Entity\RendezVous;
-use App\Entity\ChatbotQuestion;
 use App\Entity\DossierMedical;
 use App\Entity\Specialite;
 use App\Entity\User;
@@ -55,17 +54,11 @@ class Medecin
     #[ORM\OneToMany(targetEntity: RendezVous::class, mappedBy: 'medecin')]
     private Collection $rendezVous;
 
-    #[ORM\OneToMany(targetEntity: ChatbotQuestion::class, mappedBy: 'medecin')]
-    private Collection $questions;
-
     public function __construct()
     {
         $this->dossierMedicals = new ArrayCollection();
         $this->rendezVous = new ArrayCollection();
-        $this->questions = new ArrayCollection();
     }
-
-    // Getters / Setters
 
     public function getId(): ?int
     {
@@ -185,33 +178,6 @@ class Medecin
         if ($this->rendezVous->removeElement($rendezVous)) {
             if ($rendezVous->getMedecin() === $this) {
                 $rendezVous->setMedecin(null);
-            }
-        }
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, ChatbotQuestion>
-     */
-    public function getQuestions(): Collection
-    {
-        return $this->questions;
-    }
-
-    public function addQuestion(ChatbotQuestion $question): static
-    {
-        if (!$this->questions->contains($question)) {
-            $this->questions->add($question);
-            $question->setMedecin($this);
-        }
-        return $this;
-    }
-
-    public function removeQuestion(ChatbotQuestion $question): static
-    {
-        if ($this->questions->removeElement($question)) {
-            if ($question->getMedecin() === $this) {
-                $question->setMedecin(null);
             }
         }
         return $this;

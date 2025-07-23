@@ -35,8 +35,11 @@ class DossierMedical
     private ?Patient $patient = null;
 
     /**
-     * @var Collection<int, Medecin>
+     * @var Collection<int, ChatbotReponse>
      */
+    #[ORM\OneToMany(mappedBy: 'dossierMedical', targetEntity: ChatbotReponse::class, cascade: ['persist', 'remove'])]
+    private Collection $chatbotReponses;
+
     #[ORM\ManyToMany(targetEntity: Medecin::class, inversedBy: 'dossierMedicals')]
     private Collection $medecins;
 
@@ -50,6 +53,7 @@ class DossierMedical
     {
         $this->medecins = new ArrayCollection();
         $this->fichierMedicals = new ArrayCollection();
+        $this->chatbotReponses = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -118,6 +122,35 @@ class DossierMedical
     }
 
     /**
+     * @return Collection<int, ChatbotReponse>
+     */
+    public function getChatbotReponses(): Collection
+    {
+        return $this->chatbotReponses;
+    }
+
+    public function addChatbotReponse(ChatbotReponse $chatbotReponse): static
+    {
+        if (!$this->chatbotReponses->contains($chatbotReponse)) {
+            $this->chatbotReponses->add($chatbotReponse);
+            $chatbotReponse->setDossierMedical($this);
+        }
+
+        return $this;
+    }
+
+    public function removeChatbotReponse(ChatbotReponse $chatbotReponse): static
+    {
+        if ($this->chatbotReponses->removeElement($chatbotReponse)) {
+            if ($chatbotReponse->getDossierMedical() === $this) {
+                $chatbotReponse->setDossierMedical(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
      * @return Collection<int, Medecin>
      */
     public function getMedecins(): Collection
@@ -162,7 +195,6 @@ class DossierMedical
     public function removeFichierMedical(FichierMedical $fichierMedical): static
     {
         if ($this->fichierMedicals->removeElement($fichierMedical)) {
-            // set the owning side to null (unless already changed)
             if ($fichierMedical->getDossierMedical() === $this) {
                 $fichierMedical->setDossierMedical(null);
             }

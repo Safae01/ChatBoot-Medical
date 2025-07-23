@@ -40,9 +40,7 @@ class RendezVous
     #[ORM\Column(type: 'datetime')]
     private ?\DateTimeInterface $date = null;
 
-    #[ORM\Column(length: 255)]
-    #[Groups(['rendezvous:read', 'rendezvous:write'])]
-    private ?string $statut = null;
+   
 
     #[ORM\Column(type: 'boolean')]
     #[Groups(['rendezvous:read', 'rendezvous:write'])]
@@ -77,17 +75,7 @@ class RendezVous
         return $this;
     }
 
-    public function getStatut(): ?string
-    {
-        return $this->statut;
-    }
-
-    public function setStatut(string $statut): static
-    {
-        $this->statut = $statut;
-        return $this;
-    }
-
+   
     public function isDisponible(): bool
     {
         return $this->disponible;

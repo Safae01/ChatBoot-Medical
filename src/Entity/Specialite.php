@@ -8,13 +8,11 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\ApiSubresource;
 
 #[ApiResource]
 #[ORM\Entity(repositoryClass: SpecialiteRepository::class)]
 class Specialite
 {
-    
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -29,8 +27,7 @@ class Specialite
     /**
      * @var Collection<int, Medecin>
      */
-   
-    #[ORM\OneToMany(targetEntity: Medecin::class, mappedBy: 'specialite')]
+    #[ORM\OneToMany(mappedBy: 'specialite', targetEntity: Medecin::class)]
     private Collection $medecins;
 
     public function __construct()
@@ -51,7 +48,6 @@ class Specialite
     public function setNom(string $nom): static
     {
         $this->nom = $nom;
-
         return $this;
     }
 
@@ -63,7 +59,6 @@ class Specialite
     public function setDescription(string $description): static
     {
         $this->description = $description;
-
         return $this;
     }
 
@@ -81,19 +76,16 @@ class Specialite
             $this->medecins->add($medecin);
             $medecin->setSpecialite($this);
         }
-
         return $this;
     }
 
     public function removeMedecin(Medecin $medecin): static
     {
         if ($this->medecins->removeElement($medecin)) {
-            // set the owning side to null (unless already changed)
             if ($medecin->getSpecialite() === $this) {
                 $medecin->setSpecialite(null);
             }
         }
-
         return $this;
     }
 }
